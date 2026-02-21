@@ -4,21 +4,22 @@
 local LexRankLanguages = {}
 
 -- Build language code mapping once at module initialization (cached for performance)
-local language_mappings = {
-    en = { "english", "en", "en_us", "en_gb", "en-us", "en-gb" },
-    es = { "spanish", "español", "es", "es_es", "es_mx", "es_ar", "es_co", "es-es", "es-mx" },
-    fr = { "french", "français", "francais", "fr", "fr_fr", "fr_ca", "fr_be", "fr_ch", "fr-fr", "fr-ca" },
-    de = { "german", "deutsch", "de", "de_de", "de_at", "de_ch", "de-de", "de-at" },
-    tr = { "turkish", "türkçe", "turkce", "tr", "tr_tr", "tr-tr" }
-}
+    local language_mappings = {
+        en = { "english", "en", "en_us", "en_gb", "en-us", "en-gb" },
+        es = { "spanish", "español", "es", "es_es", "es_mx", "es_ar", "es_co", "es-es", "es-mx" },
+        fr = { "french", "français", "francais", "fr", "fr_fr", "fr_ca", "fr_be", "fr_ch", "fr-fr", "fr-ca" },
+        de = { "german", "deutsch", "de", "de_de", "de_at", "de_ch", "de-de", "de-at" },
+        tr = { "turkish", "türkçe", "turkce", "tr", "tr_tr", "tr-tr" },
+        pl = { "polish", "polski", "pl", "pl_pl", "pl-pl" }
+    }
 
 -- Build the lookup table once at initialization
 local language_map_cache = {}
-for base_lang, variants in pairs(language_mappings) do
-    for _, variant in ipairs(variants) do
+    for base_lang, variants in pairs(language_mappings) do
+        for _, variant in ipairs(variants) do
         language_map_cache[variant] = base_lang
+        end
     end
-end
 
 -- Language code mapping and normalization (uses cached mapping)
 local function normalize_language_code(lang_code)
@@ -247,6 +248,60 @@ local TurkishLanguage = {
     end
 }
 
+-- Polish language module
+local PolishLanguage = {
+    stop_words = {
+        "a", "aby", "ale", "ani", "aż", "bardzo", "bez", "bo", "by", "być", "był", "była", 
+        "było", "były", "będzie", "co", "czy", "dla", "do", "gdy", "gdzie", "i", "ich", 
+        "im", "iż", "ja", "jak", "jako", "je", "jego", "jej", "jest", "jeśli", "już", "ją", 
+        "kiedy", "kto", "który", "która", "które", "lub", "ma", "mam", "mi", "mimo", 
+        "mnie", "mogą", "może", "można", "mu", "my", "na", "nad", "nam", "nas", "nic", 
+        "nie", "niego", "niej", "niż", "o", "od", "on", "ona", "one", "oni", "ono", "oraz", 
+        "po", "pod", "przed", "przez", "przy", "są", "się", "sobie", "tak", "tam", "te", 
+        "tego", "tej", "ten", "to", "ty", "tylko", "tym", "u", "w", "was", "we", "więc", 
+        "wy", "z", "za", "ze", "że", "żeby"
+    },
+    sentence_delimiters = { ".", "!", "?", ";" },
+    min_sentence_length = 10,
+    min_word_length = 2,
+    entity_pattern = "^[A-ZĄĆĘŁŃÓŚŹŻ]",
+
+    -- Simple stemming patterns for Polish (removing common inflectional endings)
+    stemming_patterns = {
+        { pattern = "ych$", replacement = "" },   -- przymiotniki/dopełniacz l.mn.
+        { pattern = "ich$", replacement = "" },   -- przymiotniki/dopełniacz l.mn.
+        { pattern = "ego$", replacement = "" },   -- przymiotniki/zaimki l.poj.
+        { pattern = "emu$", replacement = "" },   -- celownik l.poj.
+        { pattern = "ach$", replacement = "" },   -- miejscownik l.mn.
+        { pattern = "ami$", replacement = "" },   -- narzędnik l.mn.
+        { pattern = "owi$", replacement = "" },   -- celownik l.poj.
+        { pattern = "ów$", replacement = "" },    -- dopełniacz l.mn.
+        { pattern = "em$", replacement = "" },    -- narzędnik l.poj.
+        { pattern = "om$", replacement = "" },    -- celownik l.mn.
+        { pattern = "ie$", replacement = "" },    -- miejscownik/wołacz
+        { pattern = "y$", replacement = "" },     -- końcówki
+        { pattern = "i$", replacement = "" },     -- końcówki
+        { pattern = "e$", replacement = "" },     -- końcówki
+        { pattern = "a$", replacement = "" },     -- końcówki
+        { pattern = "o$", replacement = "" },     -- końcówki
+        { pattern = "ą$", replacement = "" },     -- końcówki
+        { pattern = "ę$", replacement = "" }      -- końcówki
+    },
+
+    tokenize_words = function(self, sentence)
+        if not sentence then return {} end
+        local words = {}
+        -- Uwzględnienie polskich znaków diakrytycznych
+        for word in sentence:gmatch("[%w%%ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]+") do
+            local clean_word = word:lower()
+            if #clean_word >= self.min_word_length and not self.stop_words_set[clean_word] then
+                table.insert(words, clean_word)
+            end
+        end
+        return words
+    end
+}
+
 -- Convert stop words arrays to hash sets for O(1) lookup
 local function prepare_language_module(module)
     if not module.stop_words_set then
@@ -264,7 +319,8 @@ local language_registry = {
     ["es"] = SpanishLanguage,
     ["fr"] = FrenchLanguage,
     ["de"] = GermanLanguage,
-    ["tr"] = TurkishLanguage
+    ["tr"] = TurkishLanguage,
+    ["pl"] = PolishLanguage
 }
 
 -- Apply stemming patterns to a word for fuzzy matching
