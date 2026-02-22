@@ -53,6 +53,21 @@ function AssistantDialog:_formatUserPrompt(user_prompt, highlightedText, user_in
   local text_to_use = highlightedText and highlightedText ~= "" and highlightedText or ""
   local language = self.assistant.settings:readSetting("response_language") or self.assistant.ui_language
   
+  -- Extract surrounding context if placeholder is present
+  local context_text = nil
+  if user_prompt:find("{context}", 1, true) then
+    local ui = self.assistant.ui
+    if ui.highlight and ui.highlight.getSelectedWordContext then
+      local success, prev, next = pcall(function()
+        return ui.highlight:getSelectedWordContext(50)
+      end)
+      if success then
+        context_text = (prev or "") .. text_to_use .. (next or "")
+      end
+    end
+    context_text = context_text or text_to_use
+  end
+
   -- Calculate progress if placeholder is present  
   local formatted_progress = nil
   if user_prompt:find("{progress}", 1, true) then
@@ -76,6 +91,7 @@ function AssistantDialog:_formatUserPrompt(user_prompt, highlightedText, user_in
     author = book.author,
     language = language,
     highlight = text_to_use,
+    context = context_text,
     user_input = user_input,
     progress = formatted_progress,
   })
@@ -388,6 +404,10 @@ function AssistantDialog:show(highlightedText)
               -- Special case for dictionary prompt
               local showDictionaryDialog = require("assistant_dictdialog")
               showDictionaryDialog(self.assistant, highlightedText)
+            elseif tab.idx == "dictionary_sjp" then
+              -- Special case for SJP dictionary prompt
+              local showDictionaryDialog = require("assistant_dictdialog")
+              showDictionaryDialog(self.assistant, highlightedText, nil, "dictionary_sjp")
             elseif tab.idx == "term_xray" then
               -- Special case for term_xray prompt - use dictionary dialog with enhanced context
               local showDictionaryDialog = require("assistant_dictdialog")

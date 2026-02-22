@@ -10,6 +10,7 @@ local Event = require("ui/event")
 local koutil = require("util")
 local assistant_utils = require("assistant_utils")
 local dict_prompts = require("assistant_prompts").assistant_prompts.dict
+local dict_sjp_prompts = require("assistant_prompts").custom_prompts.dictionary_sjp
 
 -- Expand context sentences to include surrounding sentences for pronouns and related narrative
 -- This captures "he", "she", "they" and nearby actions that provide important context
@@ -191,6 +192,8 @@ local function showDictionaryDialog(assistant, highlightedText, message_history,
         if prompt_type == "term_xray" then
             local term_xray_prompts = require("assistant_prompts").custom_prompts.term_xray
             system_prompt = term_xray_prompts.system_prompt
+        elseif prompt_type == "dictionary_sjp" then
+            system_prompt = dict_sjp_prompts.system_prompt
         else
             system_prompt = dict_prompts.system_prompt
         end
@@ -402,11 +405,21 @@ local function showDictionaryDialog(assistant, highlightedText, message_history,
             })
         }
         table.insert(message_history, context_message)
-    else
-        user_prompt = dict_prompts.user_prompt
+    elseif prompt_type == "dictionary_sjp" then
+        user_prompt = dict_sjp_prompts.user_prompt
         context_content = prev_context .. highlightedText .. next_context
-        title = _("Dictionary")
-        loading_message = _("Loading AI Dictionary ...")
+        title = _("SJP")
+        loading_message = _("Loading AI Dictionary (SJP)...")
+        local context_message = {
+            role = "user",
+            content = string.gsub(user_prompt, "{(%w+)}", {
+                    language = dict_language,
+                    context = context_content,
+                    word = highlightedText
+            })
+        }
+        table.insert(message_history, context_message)
+    else
         local context_message = {
             role = "user",
             content = string.gsub(user_prompt, "{(%w+)}", {

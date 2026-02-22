@@ -31,6 +31,7 @@ Kontekst:
 {context}
 ]],
     },
+    
     dictionary = {
         order = -10,
         text = _("Dictionary"),
@@ -68,6 +69,31 @@ Zwróć TYLKO przetłumaczony tekst, bez żadnych dodatkowych komentarzy.
 {highlight}
 ]],
     },
+    dictionary_sjp = {
+        order = -10,
+        text = _("SJP"),
+        desc = _("Prosty słownik języka polskiego dopasowany do kontekstu."),
+        system_prompt = "Jesteś słownikiem języka polskiego. Odpowiadaj krótko. Używaj wyłącznie podanego formatu Markdown. Nie dodawaj komentarzy.",
+        user_prompt = [[
+Na podstawie kontekstu wyjaśnij znaczenie słowa lub wyrażenia.
+
+Uwzględnij tylko znaczenie użyte w tym fragmencie.
+
+Zwróć wynik dokładnie w tym formacie:
+
+- **Znaczenie**: (Krótka definicja w tym kontekście)
+- **Synonimy**: (2–3 słowa pasujące w tym użyciu)
+- **Część mowy**: (np. rzeczownik, czasownik, przymiotnik)
+- **Forma podstawowa**: (Podaj lemat; jeśli już jest w formie podstawowej, wpisz „—”)
+
+[KONTEKST]
+{context}
+
+[SŁOWO/WYRAŻENIE]
+{word}
+]],
+},
+
     summarize = {
         text = _("Streszczenie"),
         order = 40,
