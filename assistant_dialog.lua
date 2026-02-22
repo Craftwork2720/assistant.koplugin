@@ -400,14 +400,11 @@ function AssistantDialog:show(highlightedText)
           end
           self:_close()
           Trapper:wrap(function()
-            if tab.order == -10 and tab.idx == "dictionary" then
-              -- Special case for dictionary prompt
+            if tab.order == -10 and (tab.idx == "dictionary" or tab.idx == "dictionary_sjp") then
+              -- Special case for dictionary prompts
               local showDictionaryDialog = require("assistant_dictdialog")
-              showDictionaryDialog(self.assistant, highlightedText)
-            elseif tab.idx == "dictionary_sjp" then
-              -- Special case for SJP dictionary prompt
-              local showDictionaryDialog = require("assistant_dictdialog")
-              showDictionaryDialog(self.assistant, highlightedText, nil, "dictionary_sjp")
+              local prompt_type = tab.idx ~= "dictionary" and tab.idx or nil
+              showDictionaryDialog(self.assistant, highlightedText, nil, prompt_type)
             elseif tab.idx == "term_xray" then
               -- Special case for term_xray prompt - use dictionary dialog with enhanced context
               local showDictionaryDialog = require("assistant_dictdialog")
