@@ -119,6 +119,56 @@ Użyj języka: **{language}**.
 ### Ostatnie wydarzenia
 (Zapisz w 2-3 punktach najważniejsze rzeczy, które wydarzyły się ostatnio)
         ]],
+    },    
+    book_info = {
+        system_prompt = "Jesteś ekspertem literackim. Odpowiadaj krótko, zwięźle i po polsku.",
+        user_prompt = [[
+Wygeneruj informacje o książce "{title}" autorstwa {author}:
+
+### O książce
+- Krótkie streszczenie (2-3 zdania), gatunek i rok wydania.
+
+### O autorze
+- Krótka biografia (1-2 zdania) i 2-3 inne znane dzieła.
+
+### Kontekst
+- Tło historyczne lub kulturowe powstania książki (1-2 zdania).
+
+### Podobne książki
+- 3 podobne książki z dobrymi ocenami. (Podaj tylko tytuł, autora i jedno zdanie o podobieństwie).
+
+Odpowiedz wyłącznie w formacie Markdown i języku: {language}.]]
+    },
+    annotations = {
+        system_prompt = "Jesteś asystentem analizującym notatki. Odpowiadaj zwięźle, konkretnie i po polsku.",
+        user_prompt = [[
+Przeanalizuj moje poniższe notatki i podkreślenia. Stwórz krótkie, uporządkowane podsumowanie:
+
+### 1. Kluczowe wnioski
+- 3 do 5 najważniejszych myśli, lekcji lub zwrotów akcji z tych notatek.
+
+### 2. Akcje / Refleksje
+- 2-3 praktyczne kroki (dla poradników/non-fiction) lub główne motywy do przemyślenia (dla beletrystyki).
+
+### 3. Kontekst
+- Podsumuj w 2 zdaniach, jak te podkreślenia łączą się z ogólnym tematem książki lub wskaż pytania, nad którymi warto się zastanowić.
+
+Zacznij od jednego zdania podsumowania ogólnego. Bądź bardzo konkretny. Język: {language}.]]
+    },
+    summary_using_annotations = {
+        system_prompt = "Jesteś skrupulatnym analitykiem literackim. Odpowiadaj po polsku w formacie Markdown.",
+        user_prompt = [[
+Stwórz ustrukturyzowane podsumowanie na podstawie dostarczonego tekstu oraz moich notatek. 
+Wpleć moje podkreślenia naturalnie w treść podsumowania, zamiast tworzyć dla nich osobną sekcję.
+
+ZASADY:
+1. **TL;DR**: Zacznij od 2-3 zdań podsumowujących główny przekaz.
+2. **Zintegrowane Podsumowanie**: Streść tekst logicznie. Gdy trafisz na podkreślenie, zacytuj je (**pogrubione**) i od razu wyjaśnij jego znaczenie w kontekście. Jeśli do podkreślenia dołączona jest moja notatka, wstaw ją tuż po wyjaśnieniu w *[kursywie i nawiasach]*.
+3. **Kluczowe Wnioski**: Wypunktuj 5-8 najważniejszych myśli (tu też możesz używać **podkreśleń**).
+4. **Praktyczne Lekcje**: Podaj 3-5 konkretnych, życiowych wniosków.
+5. **Sprzeczności**: Jeśli moja notatka kłóci się z tekstem książki, oznacz ją znakiem ⚠️ i krótko wyjaśnij. Ignoruj notatki całkowicie niezwiązane z tekstem.
+
+Pamiętaj, by nie kopiować całej książki – skup się na esencji i moich notatkach. Odpowiadaj wyłącznie w języku: {language}.]]
     },
     dict = {
         system_prompt = "Jesteś precyzyjnym słownikiem dwujęzycznym. Odpowiadaj krótko w formacie Markdown.",
