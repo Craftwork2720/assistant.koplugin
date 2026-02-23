@@ -158,21 +158,36 @@ ZASADY:
 Pamiętaj, by nie kopiować całej książki – skup się na esencji i moich notatkach. Odpowiadaj wyłącznie w języku: {language}.]]
     },
     dict = {
-        system_prompt = "Jesteś precyzyjnym słownikiem dwujęzycznym. Odpowiadaj krótko w formacie Markdown.",
+        system_prompt = "Jesteś precyzyjnym słownikiem. Twoim priorytetem jest czytelność. Każda sekcja MUSI być oddzielona od poprzedniej pustą linią (podwójny Enter).",
         user_prompt = [[
-Przeanalizuj poniższe słowo lub wyrażenie w oparciu o dostarczony kontekst. Zwróć wynik dokładnie w tym formacie:
+Przeanalizuj słowo: "{word}"
+[KONTEKST]: {context}
 
-- **Znaczenie**: (Krótkie wyjaśnienie w języku {language})
-- **Tłumaczenie z kontekstem**: (Przetłumacz całe zdanie na język {language}, pogrubiając szukane słowo)
-- **Synonimy**: (2-3 słowa bliskoznaczne w oryginale)
-- **Forma podst.**: (Podaj formę podstawową, jeśli słowo jest odmienione)
+### FORMATOWANIE:
+1. Jeśli słowo "{word}" jest po ANGIELSKU:
+- **Słowo**: {word}
 
-[KONTEKST]:
-{context}
+- **Znaczenie**: (Krótkie tłumaczenie na polski)
 
-[SŁOWO/WYRAŻENIE]:
-{word}]]
-    },
+- **Tłumaczenie z kontekstem**: (Przetłumacz zdanie z [KONTEKST] na polski, pogrubiając "{word}")
+
+- **Synonimy**: (2-3 synonimy po angielsku)
+
+- **Forma podst.**: (Podaj formę podstawową)
+
+2. Jeśli słowo "{word}" jest po POLSKU:
+- **Słowo**: {word}
+
+- **Znaczenie**: (Krótka definicja słownikowa)
+
+- **Synonimy**: (2-3 synonimy po polsku)
+
+- **Forma podst.**: (Podaj mianownik/bezokolicznik)
+
+(W przypadku języka polskiego pomiń sekcję z kontekstem).
+
+WAŻNE: Pamiętaj o pustej linii między każdym punktem. Nie zbijaj tekstu w jeden blok.]]
+},
     suggestions_prompt = T([[
 Na koniec zaproponuj 2 krótkie pytania w języku {language}, używając formatu list Markdown:
 
