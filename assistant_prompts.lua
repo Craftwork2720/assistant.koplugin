@@ -165,7 +165,7 @@ Przeanalizuj słowo: "{word}"
 
 ### FORMATOWANIE:
 1. Jeśli słowo "{word}" jest po ANGIELSKU:
-- **Słowo**: {word}
+- ### {word}
 
 - **Znaczenie**: (Krótkie tłumaczenie na polski)
 
@@ -176,7 +176,7 @@ Przeanalizuj słowo: "{word}"
 - **Forma podst.**: (Podaj formę podstawową)
 
 2. Jeśli słowo "{word}" jest po POLSKU:
-- **Słowo**: {word}
+- ### {word}
 
 - **Znaczenie**: (Krótka definicja słownikowa)
 
