@@ -99,7 +99,7 @@ msgstr  "Wyszukaj"
 
 #: ../assistant_dictdialog.lua:291 ../assistant_prompts.lua:21 ../main.lua:683
 msgid   "Term X-Ray"
-msgstr  "Rentgen terminu"
+msgstr  "X-Ray"
 
 #: ../assistant_dictdialog.lua:292
 msgid   "Loading Term X-Ray ..."
