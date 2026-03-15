@@ -19,189 +19,477 @@ local T = require("ffi/util").template
 local custom_prompts = {
     term_xray = {
         text = _("Term X-Ray"),
-        order = -20, 
-        desc = _("Szybko wyjaśnia kim lub czym jest zaznaczony termin w kontekście książki."),
-        system_prompt = "Jesteś asystentem literackim. Zawsze odpowiadaj w języku {language}. Bądź niezwykle zwięzły.",
+        order = -20, -- negative number to not show on additional questions dialog
+        desc = _(
+            "This prompt creates a structured system for generating context-aware definitions of words or phrases from literature by analyzing the highlighted term within its surrounding text to provide nuanced explanations that capture both literal meaning and contextual significance."),
+        system_prompt =
+        "You are a literary analyst who creates clear, encyclopedic descriptions of narrative elements. Always respond in Markdown format using Wikipedia-style formatting and simple language.",
         user_prompt = [[
-Kim lub czym jest "{highlight}" w książce "{title}" autorstwa {author}? 
+Explain the term "{highlight}" as used in "{title}" by {author}, based ONLY on the provided context.
 
-Odpowiedz w 1-3 krótkich zdaniach. Skup się wyłącznie na najważniejszych, konkretnych faktach i roli tej postaci/rzeczy w fabule na podstawie poniższego kontekstu. Nie pisz wstępów ani podsumowań.
+Rules:
+- Max 180–220 words.
+- Be concise and factual.
+- No generic knowledge outside context.
+- No introductions or conclusions.
+- Use short paragraphs.
 
-Kontekst:
+Structure:
+
+### What It Is
+Brief definition based on context.
+
+### Role in Story
+How it functions in the narrative so far.
+
+### Key Detail
+1–2 important contextual observations.
+
+Respond only in {language}.
+
+Context:
 {context}
 ]],
     },
-    
     dictionary = {
-        order = -10,
+        order = -10, -- negative number indicates a stub prompt
         text = _("Dictionary"),
-        desc = _("Krótki słownik dopasowany do kontekstu."),
+        desc = _("This prompt acts as a dictionary for the highlighted text, to a word or phrase."),
+        -- this prompt is a stub (will not shown in follow-up questions)
+        -- it will be replaced by the actual prompt in the code below
     },
     quick_note = {
-        order = 5,
+        order = 5, --should be visible on additional questions dialog
         text = _("Quick Note"),
-        desc = _("Szybka notatka."),
-        user_prompt = "", 
+        desc = _("This button creates a quick note with highlighted text."),
+        user_prompt = "", --dummy prompt
+        -- this prompt is a stub
+    },
+    vocabulary = {
+        text = _("Vocabulary"),
+        order = 10,
+        desc = _("This prompt analyzes the vocabulary of the highlighted text, identifying complex words and providing definitions, synonyms, and usage examples."),
+        user_prompt = [[
+Find B2+ words in the text.
+
+For each word:
+- Base form
+- Up to 2 simple synonyms
+- Short explanation in {language}
+
+Format strictly:
+1. __word__: synonym1, synonym2 : short explanation
+
+Only list. No extra text.
+
+Text:
+{highlight}
+]],
+    },
+    grammar = {
+        text = _("Grammar"),
+        order = 20,
+        desc = _(
+            "This prompt analyzes the grammar of the highlighted text, providing a detailed explanation of its structure and any grammatical errors."),
+        system_prompt =
+        "You are a helpful AI assistant. Always respond in Markdown format, but use markdown lists to present comparisons instead of tables.",
+        user_prompt =
+        [[
+Briefly explain the grammar of the text.
+
+Focus on:
+- sentence structure
+- verb tense
+- unusual constructions
+- errors (if any)
+
+Max 6–8 short bullet points.
+No long theory.
+Only {language}.
+
+Text:
+{highlight}]],
     },
     translate = {
         order = 30,
         text = _("Translate"),
-        desc = _("Profesjonalne, literackie tłumaczenie zaznaczonego tekstu."),
+        desc = _("This prompt translates the highlighted text to another language."),
         user_prompt = [[
-Jesteś profesjonalnym tłumaczem literatury. Przetłumacz poniższy fragment na język {language}. 
-Zadbaj o to, aby tłumaczenie brzmiało naturalnie, oddawało oryginalny ton, styl i emocje autora. Pomiń dosłowne tłumaczenia idiomów na rzecz ich odpowiedników znaczeniowych.
+Translate the text into {language}.
 
-Zwróć TYLKO przetłumaczony tekst, bez żadnych dodatkowych komentarzy.
+- Keep meaning and tone.
+- Sound natural.
+- Output only translation.
+- No notes unless absolutely necessary.
 
-[TEKST]:
+Text:
 {highlight}
 ]],
     },
     summarize = {
         text = _("Summarize"),
         order = 40,
-        desc = _("Krótkie podsumowanie trudniejszego akapitu lub strony."),
+        desc = _("This prompt summarizes the highlighted text, capturing its main points and essential details."),
         user_prompt = [[
-Przeczytaj poniższy fragment i w 2-3 prostych zdaniach streść, co się w nim dzieje lub o czym mówi. 
-Odpowiedz wyłącznie w języku: {language}.
+Summarize the text briefly.
 
-Fragment: {highlight}]],
+- Max 5 short sentences.
+- Focus only on main idea.
+- No repetition.
+- No filler.
+- Use the original language.
+
+Text:
+{highlight}]],
+    },
+    simplify = {
+        text = _("Simplify"),
+        order = 50,
+        desc = _("This prompt simplifies the highlighted text to make it easier to understand."),
+        user_prompt =
+        [[
+Rewrite the text in simpler language.
+
+- Keep original meaning.
+- Shorter sentences.
+- Remove complex wording.
+- No added explanations.
+
+Text:
+{highlight}]],
+    },
+    key_points = {
+        text = _("Key Points"),
+        order = 60,
+        desc = _(
+            "This prompt extracts and lists the key points from the highlighted text, ensuring clarity and organization."),
+        user_prompt =
+        [[
+Extract key points.
+
+- 5–8 bullet points.
+- Each point max 1 sentence.
+- Only essential ideas.
+- No commentary.
+
+Respond in {language}.
+
+Text:
+{highlight}]],
+    },
+    ELI5 = {
+        text = _("ELI5"),
+        order = 70,
+        desc = _(
+            "This prompt explains the highlighted text as if to a five-year-old, simplifying complex concepts into easily understandable terms."),
+        user_prompt =
+        [[
+Explain this like to a child.
+
+- 3–5 very short sentences.
+- Very simple words.
+- No metaphors unless helpful.
+
+Only {language}.
+
+Text:
+{highlight}
+]],
     },
     explain = {
         text = _("Explain"),
         order = 80,
-        desc = _("Szybkie wyjaśnienie o co chodzi w zaznaczonym fragmencie."),
+        desc = _("This prompt explains the highlighted text in detail, ensuring clarity and understanding."),
         user_prompt = [[
-Wyjaśnij krótko i w prostych słowach, jakie jest ukryte znaczenie lub główny sens tego fragmentu tekstu. 
-Odpowiedz maksymalnie w 2–3 zdaniach, wyłącznie w języku: {language}.
+Explain the highlighted text clearly.
 
-Fragment: {highlight}
+Rules:
+- 4–6 short sentences.
+- Focus on core meaning.
+- Clarify difficult words briefly.
+- No repetition.
+- No introduction or conclusion.
+
+Respond only in {language}.
+
+Text:
+{highlight}
+]],
+    },
+    historical_context = {
+        text = _("Historical Context"),
+        order = 90,
+        desc = _(
+            "This prompt provides a detailed historical context for the highlighted text, explaining its significance and background."),
+        user_prompt =
+        [[
+Briefly explain the historical context relevant to this text.
+
+- Max 6 short sentences.
+- Only directly relevant background.
+- No broad essays.
+
+Respond in {language}.
+
+Text:
+{highlight}
+]],
+    },
+    wikipedia = {
+        text = _("Wikipedia"),
+        order = 100,
+        desc = _(
+            "This prompt generates a comprehensive Wikipedia-style article based on the highlighted text, ensuring factual accuracy and neutrality."),
+        user_prompt =
+        [[
+Write a concise encyclopedic entry.
+
+Structure:
+- Short intro paragraph
+- 3–5 short sections
+
+Be neutral and factual.
+Max 300 words.
+Only {language}.
+
+Topic:
+{highlight}
 ]],
     },
 }
+
+
 local assistant_prompts = {
     default = {
-        system_prompt = "Jesteś pomocnym asystentem. Odpowiadaj krótko i w formacie Markdown.",
+        system_prompt = "You are a helpful AI assistant. Always respond in Markdown format.",
     },
     recap = {
-        system_prompt = "Jesteś asystentem literackim. Odpowiadaj w formacie Markdown.",
+        system_prompt =
+        "You are an expert literary assistant that provides accurate information about books. Always respond in Markdown format.",
         user_prompt = [[
-Książka: '''{title}''' autorstwa '''{author}''' (przeczytano {progress}%).
-Przypomnij krótko (w 3-4 zdaniach), co wydarzyło się do tej pory, aby pomóc mi wrócić do czytania. 
-Nie zdradzaj spoilerów z dalszej części książki. Dopasuj ton do gatunku powieści.
-Odpowiedz całkowicie w języku {language}.]]
+Very briefly recap the story up to {progress}%.
+
+- Focus on recent events.
+- No spoilers beyond this point.
+- Max 8–10 sentences.
+- Use bold for names only.
+
+Match tone of the book.
+Respond in {language}.
+]]
     },
     xray = {
-        system_prompt = "Jesteś asystentem literackim. Odpowiadaj w formacie Markdown.",
+        system_prompt =
+        "You are an expert literary assistant that provides accurate information about books. Always respond in Markdown format.",
         user_prompt = [[
-Wygeneruj krótki, bez-spoilerowy przewodnik (X-Ray) dla książki **{title}** ({author}) do momentu {progress}%.
-Użyj języka: **{language}**.
+Your output must be spoiler-free beyond the reader’s current progress.
 
-### Główne Postacie
-(Wymień 3-5 najważniejszych postaci i jednym zdaniem określ ich obecny status)
+Keep it concise and readable for an e-reader.
 
-### Kluczowe Miejsca
-(Wymień 2-3 obecne lokacje)
+Required structure (Markdown):
 
-### Ostatnie wydarzenia
-(Zapisz w 2-3 punktach najważniejsze rzeczy, które wydarzyły się ostatnio)
+### Characters
+List 4–6 key characters.
+- **Name** — 1–2 short sentences _<u>relationship</u>_
+
+### Locations
+List 3–5 important places.
+- **Place** — 1 short sentence _<u>notable event</u>_
+
+### Main Themes
+List 3–5 themes.
+- **Theme** — 1 short sentence
+
+### Key Terms
+List 3–5 important terms or concepts.
+- **Term** — very concise meaning
+
+### Recent Turning Points
+List 5–8 major events only.
+- **Chapter / Scene:** one short sentence
+
+### Re-immersion
+* **Where we stopped:** 1–2 short sentences
+* **Current objective:** 1 sentence
+* **Open conflict:** 1 sentence
+* **Tone:** 1 sentence
+
+Rules:
+- Short sentences only.
+- No filler.
+- No repetition.
+- Do NOT reveal events beyond {progress}%.
+- Answer only in {language}.
+- Return only the structured X-Ray.
+
+Book: {title} by {author}  
+Progress: {progress}%
         ]],
-    },    
+    },
     book_info = {
-        system_prompt = "Jesteś ekspertem literackim. Odpowiadaj krótko, zwięźle i po polsku.",
+        system_prompt =
+        "You are an expert literary assistant that provides accurate information about books. Always respond in Markdown format.",
         user_prompt = [[
-Wygeneruj informacje o książce "{title}" autorstwa {author}:
+Generate detailed information about the book "{title}" by {author}. Provide the information in the following sections:
 
-### O książce
-- Krótkie streszczenie (2-3 zdania), gatunek i rok wydania.
+### Book Information
+- Provide a summary of the book's plot or main themes.
+- Mention the genre, publication date, and any notable editions.
+- Include the number of pages or chapters if known.
 
-### O autorze
-- Krótka biografia (1-2 zdania) i 2-3 inne znane dzieła.
+### About the Author
+- Give a brief biography of {author}.
+- Mention their other notable works.
+- Discuss their writing style or influences.
 
-### Kontekst
-- Tło historyczne lub kulturowe powstania książki (1-2 zdania).
+### Historical Context
+- Explain the historical or cultural context in which the book was written or set.
+- Discuss how the book's themes relate to the time period.
 
-### Podobne książki
-- 3 podobne książki z dobrymi ocenami. (Podaj tylko tytuł, autora i jedno zdanie o podobieństwie).
+### Similar Books Recommendation
+- Recommend 3-5 similar books with the best ratings on goodreads.
+- Provide a brief description of each recommended book, highlighting the similarities. (e.g., theme, style, genre).
+- Output this part as list, not a table.
 
-Odpowiedz wyłącznie w formacie Markdown i języku: {language}.]]
+Ensure all information is accurate and based on known facts. Respond entirely in {language}.]],
     },
     annotations = {
-        system_prompt = "Jesteś asystentem analizującym notatki. Odpowiadaj zwięźle, konkretnie i po polsku.",
+        system_prompt =
+        "You are an expert literary assistant that provides accurate information about books. Always respond in Markdown format.",
         user_prompt = [[
-Przeanalizuj moje poniższe notatki i podkreślenia. Stwórz krótkie, uporządkowane podsumowanie:
+You are given  my notes and highlights.
+Your task is to carefully analyze this content and produce a structured summary that includes:
 
-### 1. Kluczowe wnioski
-- 3 do 5 najważniejszych myśli, lekcji lub zwrotów akcji z tych notatek.
+1. **Key Takeaways**
+   - Summarize the most important insights, lessons, or narrative developments.
+   - Highlight recurring themes, turning points, or critical information.
 
-### 2. Akcje / Refleksje
-- 2-3 praktyczne kroki (dla poradników/non-fiction) lub główne motywy do przemyślenia (dla beletrystyki).
+2. **To-Do / Action Items**
+   - Based on the content and my notes, suggest practical actions, reflections, or follow-ups I should consider.
+   - If the text is fictional, focus on intellectual or emotional takeaways (e.g., themes to reflect on, characters to analyze, related readings).
+   - If the text is non-fiction, focus on actionable steps (e.g., habits to adopt, ideas to research, concepts to apply).
 
-### 3. Kontekst
-- Podsumuj w 2 zdaniach, jak te podkreślenia łączą się z ogólnym tematem książki lub wskaż pytania, nad którymi warto się zastanowić.
+3. **Contextual Notes**
+   - Clarify connections between my highlights/notes and the broader narrative or arguments.
+   - Point out any open questions or areas I may want to revisit in the earlier chapters.
 
-Zacznij od jednego zdania podsumowania ogólnego. Bądź bardzo konkretny. Język: {language}.]]
+Output format:
+- Start with a concise **executive summary** (3–5 sentences).
+- Then provide a **detailed list** under “Key Takeaways” and “To-Do / Action Items.”
+- End with **Contextual Notes / Reflections** in bullet points.
+
+Keep the tone clear, thoughtful, and practical.
+- Always respond in {language}.]],
     },
     summary_using_annotations = {
-        system_prompt = "Jesteś skrupulatnym analitykiem literackim. Odpowiadaj po polsku w formacie Markdown.",
+        system_prompt =
+        "You are an expert literary assistant that provides accurate information about books. Always respond in Markdown format.",
         user_prompt = [[
-Stwórz ustrukturyzowane podsumowanie na podstawie dostarczonego tekstu oraz moich notatek. 
-Wpleć moje podkreślenia naturalnie w treść podsumowania, zamiast tworzyć dla nich osobną sekcję.
+You are a meticulous book summarizer and analyst.
 
-ZASADY:
-1. **TL;DR**: Zacznij od 2-3 zdań podsumowujących główny przekaz.
-2. **Zintegrowane Podsumowanie**: Streść tekst logicznie. Gdy trafisz na podkreślenie, zacytuj je (**pogrubione**) i od razu wyjaśnij jego znaczenie w kontekście. Jeśli do podkreślenia dołączona jest moja notatka, wstaw ją tuż po wyjaśnieniu w *[kursywie i nawiasach]*.
-3. **Kluczowe Wnioski**: Wypunktuj 5-8 najważniejszych myśli (tu też możesz używać **podkreśleń**).
-4. **Praktyczne Lekcje**: Podaj 3-5 konkretnych, życiowych wniosków.
-5. **Sprzeczności**: Jeśli moja notatka kłóci się z tekstem książki, oznacz ją znakiem ⚠️ i krótko wyjaśnij. Ignoruj notatki całkowicie niezwiązane z tekstem.
+INPUTS:
+- book_text: the full text of the book (or a very large portion, potentially thousands of words)
+- highlights: a list of highlighted passages and my personal notes
 
-Pamiętaj, by nie kopiować całej książki – skup się na esencji i moich notatkach. Odpowiadaj wyłącznie w języku: {language}.]]
+YOUR TASK:
+Produce a **structured summary** that integrates the highlights naturally into the book summary.
+Do not separate highlights into a final section — instead, use a translated summary of each highlight inside the summary to emphasize them at the right place.
+
+STYLE & RULES:
+1. Language → Always respond in {language}.
+2. TL;DR → Begin with a 2–3 sentence overall summary of the book’s main message.
+3. Integrated Summary:
+   - Provide a clear, logical summary of the book.
+   - Each time you encounter a highlight, render the exact highlighted text in **bold**.
+   - Immediately after the bold text, paraphrase it and explain why it matters in the context of the book.
+   - If a highlight has a note, include it in *italic parentheses* right after your explanation.
+   - Maintain flow: highlights must feel naturally embedded, not forced.
+4. Key Points:
+   - After the integrated summary, list the 8–12 most important insights in bullet form.
+   - Incorporate highlights into the list (again in **bold**), paraphrased where helpful.
+5. Actionable Takeaways:
+   - Provide 5–8 clear, practical lessons or insights the reader can apply.
+6. Tone:
+   - Clear, thoughtful, and practical.
+   - Never copy the entire book verbatim; focus on essence and integration of highlights.
+7. Contradictions:
+   - If a highlight conflicts with the book text, mark it with ⚠️ and briefly note the possible interpretation.
+   - If a highlight is not related to the book text (if it is not in the book text), ignore it.
+
+OUTPUT STRUCTURE (Markdown):
+- TL;DR
+- Integrated Summary
+- Key Points
+- Actionable Takeaways
+- ⚠️ Contradictions / Open Questions (if any)
+
+IMPORTANT:
+- Always weave highlights *inline*, never at the end.
+- Keep formatting consistent (Markdown headings, bold highlights, italic notes).
+- If the text is extremely long, compress intelligently while still reflecting highlights.
+
+Now begin the analysis with the provided book_text and highlights.]],
     },
+
     dict = {
-        system_prompt = "Jesteś precyzyjnym słownikiem. Twoim priorytetem jest czytelność. Każda sekcja MUSI być oddzielona od poprzedniej pustą linią (podwójny Enter).",
+        system_prompt =
+        "You are a literary dictionary that explains words in their book context. Always respond in Markdown format.",
         user_prompt = [[
-Przeanalizuj słowo: "{word}"
-[KONTEKST]: {context}
+## Task: Book-Aware Word Analysis
 
-### FORMATOWANIE:
-1. Jeśli słowo "{word}" jest po ANGIELSKU:
-- ### {word}
+Explain the highlighted term "{word}" as used in "{title}" by {author}, based on the provided context. Be concise. Do not exceed the requested length.
 
-- **Znaczenie**: (Krótkie tłumaczenie na polski)
 
-- **Tłumaczenie z kontekstem**: (Przetłumacz zdanie z [KONTEKST] na polski, pogrubiając "{word}")
+## Context from the Book
+The following sentences contain or relate to "{word}":
+{context}
 
-- **Synonimy**: (2-3 synonimy po angielsku)
+## Format
 
-- **Forma podst.**: (Podaj formę podstawową)
+Start the response with:
+### {word}
 
-2. Jeśli słowo "{word}" jest po POLSKU:
-- ### {word}
+Then provide the requested sections below.
 
-- **Znaczenie**: (Krótka definicja słownikowa)
+## Analysis
 
-- **Synonimy**: (2-3 synonimy po polsku)
+### FORMATTING RULES:
+1. If the word "{word}" is in ENGLISH:
 
-- **Forma podst.**: (Podaj mianownik/bezokolicznik)
+- **Tłumaczenie**: (Short translation into {language})
 
-(W przypadku języka polskiego pomiń sekcję z kontekstem).
+- **Synonimy**: Up to three concise synonyms that best match the word’s meaning in THIS context. 
+  Prioritize synonyms that reflect how the word is actually used in the book.
 
-WAŻNE: Pamiętaj o pustej linii między każdym punktem. Nie zbijaj tekstu w jeden blok.]]
-},
+- **Kontekst**: Literal meaning of the word as used in this context.
+  Explain concisely in {language} language.
+  Focus on contextual meaning, not only a generic dictionary definition.
+  If the usage appears symbolic, archaic, poetic, or genre-specific, reflect that briefly.
+
+2. If the word "{word}" is in POLISH:
+
+- **Synonimy**: Up to three concise synonyms that best match the word’s meaning in THIS context. 
+  Prioritize synonyms that reflect how the word is actually used in the book.
+
+- **Kontekst**: Literal meaning of the word as used in this context.
+  Explain concisely in {language} language.
+  Focus on contextual meaning, not only a generic dictionary definition.
+  If the usage appears symbolic, archaic, poetic, or genre-specific, reflect that briefly.
+
+Show only the heading and the requested sections. No introduction or additional commentary.
+]],
+    },
     suggestions_prompt = T([[
-Na koniec zaproponuj 2 krótkie pytania w języku {language}, używając formatu list Markdown:
-
+At the end of your response, first generate 2-3 questions in {language} language based on your answer. Critically, these questions **must not contain any quotation marks and parentheses, or any other punctuation whatsoever**. Only use letters and spaces.
+Then, display these questions as hyperlinks in a **Markdown unordered list** using the following exact format:
 ```
-
 ---
+__%1__
 
-**%1**
-
-* [Pytanie 1](#q:Pytanie 1)
-* [Pytanie 2](#q:Pytanie 2)
-
+- [Question 1](#q:Question 1)
+- [Question 2](#q:Question 2)
 ```
-]], "Może Cię zainteresować:"),
+]], _("You may find these topics interesting:")),
 }
 
 
