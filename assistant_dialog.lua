@@ -83,10 +83,15 @@ function AssistantDialog:_formatUserPrompt(user_prompt, highlightedText, user_in
 end
 
 function AssistantDialog:_createResultText(highlightedText, message_history, previous_text, title)
+  local is_translate = (title == _("Translate"))
+
   -- Helper function to format a single message (user or assistant)
   local function formatSingleMessage(message, title)
     if not message then return "" end
     if message.role == "user" then
+      -- For translate mode, hide user message entirely
+      if is_translate then return "" end
+
       local user_message
       if title and title ~= "" then
         user_message = string.format("%s\n\n", title)
@@ -117,6 +122,10 @@ function AssistantDialog:_createResultText(highlightedText, message_history, pre
       -- Remove code block markers before displaying
       assistant_content = assistant_content:gsub("```", "\n")
       assistant_content = normalizeMarkdownHeadings(assistant_content, 3, 6) or assistant_content
+      -- For translate mode, return only the translation without headers
+      if is_translate then
+        return assistant_content
+      end
       return string.format("** » Assistant:**\n\n%s\n\n", assistant_content)
     end
     return "" -- Should not happen for valid roles

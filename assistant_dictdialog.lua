@@ -426,21 +426,14 @@ local function showDictionaryDialog(assistant, highlightedText, message_history,
     end
 
     local function createResultText(highlightedText, answer)
-        local result_text
         local render_markdown = koutil.tableGetValue(CONFIGURATION, "features", "render_markdown") or true
-        -- Limit prev_context to last 100 characters and next_context to first 100 characters
-        local prev_context_limited = string.sub(prev_context, -100)
-        local next_context_limited = string.sub(next_context, 1, 100)
         local normalized_answer = assistant_utils.normalizeMarkdownHeadings(answer, 2, 6) or answer
+        
         if render_markdown then
-            -- in markdown mode, outputs markdown formatted highlighted text
-            result_text = T("... %1 **%2** %3 ...\n\n%4", prev_context_limited, highlightedText, next_context_limited, normalized_answer)
+            return normalized_answer
         else
-            -- in plain text mode, use widget controlled characters.
-            result_text = T("%1... %2%3%4 ...\n\n%5", TextBoxWidget.PTF_HEADER, prev_context_limited, 
-                TextBoxWidget.PTF_BOLD_START, highlightedText, TextBoxWidget.PTF_BOLD_END,  next_context_limited, normalized_answer)
+            return T("%1%2", TextBoxWidget.PTF_HEADER, normalized_answer)
         end
-        return result_text
     end
 
     local result = createResultText(highlightedText, ret)
