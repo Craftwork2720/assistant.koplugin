@@ -206,8 +206,9 @@ Generate detailed information about the book "{title}" by {author}. Provide the 
 Ensure all information is accurate and based on known facts. Respond entirely in {language}.]],
     },
     dict = {
-        system_prompt = 
-        "Jesteś literackim słownikiem wyjaśniającym słowa w kontekście książki. Zawsze odpowiadaj w języku {language}. Używaj formatu Markdown. Bądź zwięzły i konkretny.",
+        system_prompt =
+    "Jesteś literackim słownikiem wyjaśniającym słowa w kontekście książki. Zawsze odpowiadaj w języku {language}. Zawsze używaj poprawnego Markdown. Odpowiedzi mają być zwięzłe, konkretne i spójne.",
+
         user_prompt = [[
 Wyjaśnij podświetlone słowo "{word}" z książki "{title}" autorstwa {author}, na podstawie dostarczonego kontekstu.
 
@@ -217,32 +218,55 @@ Zdania zawierające lub związane z "{word}":
 
 ## Zadanie
 
-Rozpocznij odpowiedź od:
-### {word}
+### Format odpowiedzi (OBOWIĄZKOWY)
 
-Następnie podaj odpowiednie sekcje:
+- ZAWSZE rozpocznij od nagłówka:
+  ### {word}
+
+- ZAWSZE używaj poprawnego Markdown (nagłówki, listy, kursywa).
+
+---
 
 Jeśli język słowa "{word}" różni się od {language}:
 
-- **Tłumaczenie**: Krótkie tłumaczenie na {language}.
+- **Tłumaczenie**: krótkie, jednoznaczne tłumaczenie słowa "{word}" na {language}.
 
-- **Synonimy**: Maksymalnie trzy synonimy najlepiej pasujące do znaczenia słowa w TYM kontekście.
+- **Synonimy**: maksymalnie 3 synonimy dopasowane do znaczenia w TYM kontekście.
 
-- **W książce**: Znajdź zdanie zawierające "{word}" w dostarczonym kontekście.
-  Przetłumacz na {language} tylko fragment: kilka słów przed "{word}", samo słowo i kilka słów po nim.
-  Format: *"...tłumaczenie fragmentu..."*
+- **W książce**:
+  1. Znajdź zdanie zawierające "{word}" w kontekście.
+  2. Wybierz krótki fragment (kilka słów przed i po "{word}").
+  3. Przetłumacz CAŁY fragment na {language}.
+  4. Fragment MUSI być w 100% w {language} — bez żadnych słów w języku oryginalnym.
+  5. Słowo "{word}" również musi być przetłumaczone.
+
+  Format:
+  *"...przetłumaczony fragment..."*
+
+---
 
 Jeśli słowo "{word}" jest w języku {language}:
 
-- **Synonimy**: Maksymalnie trzy synonimy najlepiej pasujące do znaczenia słowa w TYM kontekście.
+- **Synonimy**: maksymalnie 3 synonimy dopasowane do kontekstu.
 
-- **Kontekst**: Dosłowne znaczenie słowa w tym kontekście, wyjaśnione zwięźle.
-  Skup się na znaczeniu kontekstowym, nie tylko na definicji słownikowej.
-  Jeśli użycie jest symboliczne, archaiczne, poetyckie lub gatunkowo specyficzne — zaznacz to krótko.
+- **Kontekst**: krótkie, precyzyjne wyjaśnienie znaczenia słowa w TYM kontekście.
+  Jeśli użycie jest symboliczne, archaiczne, metaforyczne lub gatunkowe — zaznacz to krótko.
 
-Pokaż tylko nagłówek i wymagane sekcje. Bez wstępu i dodatkowego komentarza.
+---
+
+## Ważne zasady (KRYTYCZNE)
+
+- NIE pokazuj oryginalnego zdania w sekcji „W książce”.
+- NIE mieszaj języków — cała odpowiedź musi być w {language}.
+- NIE pokazuj najpierw oryginału, a potem tłumaczenia.
+- ZAWSZE tłumacz całe wyrażenie, nie tylko jego część.
+- Zachowuj spójny, czysty Markdown.
+- NIE dodawaj żadnych dodatkowych komentarzy ani wstępu.
+
+Pokaż tylko nagłówek i wymagane sekcje.
 ]],
     },
+
     suggestions_prompt = T([[
 At the end of your response, first generate 2-3 questions in {language} language based on your answer. Critically, these questions **must not contain any quotation marks and parentheses, or any other punctuation whatsoever**. Only use letters and spaces.
 Then, display these questions as hyperlinks in a **Markdown unordered list** using the following exact format:
