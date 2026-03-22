@@ -132,7 +132,7 @@ Very briefly recap the story up to {progress}%.
 
 Match tone of the book.
 Respond in {language}.
-]]
+]],
     },
     xray = {
        system_prompt = "Jesteś doświadczonym asystentem literackim dostarczającym dokładnych informacji o książkach. Odpowiadaj wyłącznie w języku {language}. Używaj formatu Markdown. Nie zdradzaj wydarzeń wykraczających poza aktualny postęp czytelnika.",
