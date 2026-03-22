@@ -229,11 +229,11 @@ Zdania zawierające lub związane z "{word}":
 
 Jeśli język słowa "{word}" różni się od {language}:
 
-- **Tłumaczenie**: krótkie, jednoznaczne tłumaczenie słowa "{word}" na {language}.
+ **Tłumaczenie**: krótkie, jednoznaczne tłumaczenie słowa "{word}" na {language}.
 
-- **Synonimy**: maksymalnie 3 synonimy dopasowane do znaczenia w TYM kontekście.
+ **Synonimy**: maksymalnie 3 synonimy dopasowane do znaczenia w TYM kontekście.
 
-- **W książce**:
+ **W książce**:
   1. Znajdź zdanie zawierające "{word}" w kontekście.
   2. Wybierz krótki fragment (kilka słów przed i po "{word}").
   3. Przetłumacz CAŁY fragment na {language}.
@@ -247,9 +247,13 @@ Jeśli język słowa "{word}" różni się od {language}:
 
 Jeśli słowo "{word}" jest w języku {language}:
 
-- **Synonimy**: maksymalnie 3 synonimy dopasowane do kontekstu.
 
-- **Kontekst**: krótkie, precyzyjne wyjaśnienie znaczenia słowa w TYM kontekście.
+ **Znaczenie**: krótko, znaczenie, definicja "{word}" w formie listy, max 5 .
+
+
+ **Synonimy**: maksymalnie 3 synonimy dopasowane do kontekstu.
+
+ **Kontekst**: krótkie, precyzyjne wyjaśnienie znaczenia słowa w TYM kontekście. 
   Jeśli użycie jest symboliczne, archaiczne, metaforyczne lub gatunkowe — zaznacz to krótko.
 
 ---
