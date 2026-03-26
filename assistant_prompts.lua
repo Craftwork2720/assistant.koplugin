@@ -262,14 +262,10 @@ Odpowiadaj WYŁĄCZNIE w języku {language}. Używaj Markdown. Bądź zwięzły.
 Wyjaśnij słowo **"{word}"** z książki *{title}* ({author}).
 
 ### {word}
+
 **Tłumaczenie / Definicja:** [jeśli obcy język: tłumaczenie na {language}; jeśli {language}: definicja słownikowa]
 
-**Znaczenie w kontekście:** [co znaczy w tym konkretnym fragmencie — 1–2 zdania]
-
 **Synonimy:** [maks. 3, dopasowane do kontekstu]
-
-**Fragment:**
-> [krótki cytat z tłumaczeniem lub objaśnieniem, jeśli potrzebne]
 
 ---
 Kontekst:
@@ -288,9 +284,8 @@ Używaj Markdown. Bądź zwięzły i konkretny — czytelnik chce szybko wróci�
 Wyjaśnij angielskie słowo lub wyrażenie **"{word}"** z książki *{title}* ({author}).
 
 ### {word}
-**Tłumaczenie:** [polskie tłumaczenie; podaj 2–3 warianty jeśli polisemiczne]
 
-**Znaczenie w kontekście:** [co dokładnie znaczy w tym fragmencie — 1–2 zdania]
+**Tłumaczenie:** [polskie tłumaczenie; podaj 2–3 warianty jeśli polisemiczne]
 
 **Synonimy EN:** [maks. 3 angielskie synonimy pasujące do kontekstu]
 
@@ -315,6 +310,7 @@ Zwracaj szczególną uwagę na archaizmy, użycie metaforyczne, regionalizmy i s
 Wyjaśnij polskie słowo lub wyrażenie **"{word}"** z książki *{title}* ({author}).
 
 ### {word}
+
 **Definicja:** [znaczenie słownikowe; maks. 3 punkty jeśli polisemiczne]
 
 **Znaczenie w kontekście:** [co dokładnie znaczy w tym fragmencie — 1–2 zdania; zaznacz jeśli archaiczne, metaforyczne lub specjalistyczne]

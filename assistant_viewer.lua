@@ -75,6 +75,15 @@ body {
     padding: 0;
 }
 
+p {
+    margin: 0;
+    padding: 0;
+}
+
+p + p {
+    margin-top: 0.4em;
+}
+
 blockquote, dd, pre {
     margin: 0 1em;
 }
