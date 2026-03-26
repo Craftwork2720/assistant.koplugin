@@ -120,6 +120,26 @@ Fragment:
 {highlight}
 ]],
     },
+
+    -- -------------------------------------------------------------------------
+    -- WIKIPEDIA — encyklopedyczny artykuł o zaznaczonym pojęciu
+    -- -------------------------------------------------------------------------
+    wikipedia = {
+        text = _("Wikipedia"),
+        order = 100,
+        desc = _("Generates a concise Wikipedia-style article about the highlighted term or topic — factual, neutral, structured."),
+        user_prompt = [[
+Napisz zwięzły artykuł encyklopedyczny w stylu Wikipedii na temat: **{highlight}**.
+
+Zasady:
+- Zacznij od krótkiego akapitu definiującego temat (2–3 zdania).
+- Przedstaw najważniejsze fakty, kontekst historyczny lub naukowy, kluczowe zastosowania.
+- Neutralny, rzeczowy ton — bez opinii.
+- Używaj nagłówków (###) dla sekcji tematycznych.
+- Maks. 300–400 słów.
+- Odpowiedź w języku {language}.
+]],
+    },
 }
 
 
