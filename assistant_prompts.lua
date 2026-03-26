@@ -1,295 +1,339 @@
 local _ = require("assistant_gettext")
 local T = require("ffi/util").template
--- preconfigured prompts for various tasks
 
--- Custom prompts for the AI
--- Available placeholder for user prompts:
--- {title}  : book title from metadata
--- {author} : book author from metadata
--- {highlight}  : selected texts
--- {language}   : the `response_language` variable defined above
--- {user_input} : user input from the input dialog
--- {progress}   : the progress percentage of the book
---
--- text: text to display on the button in the UI.
--- order: order of the button in the UI, higher number means later in the list.
--- show_on_main_popup: if true, the button will be shown in the main popup dialog.
+-- =============================================================================
+-- CUSTOM PROMPTS — prompty wywoływane przez zaznaczenie tekstu
+-- =============================================================================
+-- Dostępne zmienne:
+--   {title}      — tytuł książki z metadanych
+--   {author}     — autor książki z metadanych
+--   {highlight}  — zaznaczony tekst
+--   {language}   — język odpowiedzi (zmienna response_language)
+--   {user_input} — tekst wpisany przez użytkownika
+--   {progress}   — procent ukończenia książki
+--   {context}    — szerszy fragment tekstu wokół zaznaczenia
+-- =============================================================================
 
--- prompts attributes can be overridden in the configuration file.
 local custom_prompts = {
+
+    -- -------------------------------------------------------------------------
+    -- TERM X-RAY — encyklopedyczne wyjaśnienie pojęcia w kontekście narracji
+    -- -------------------------------------------------------------------------
     term_xray = {
         text = _("Term X-Ray"),
         order = -20,
-        desc = _("This prompt creates a structured system for generating context-aware definitions of words or phrases from literature by analyzing the highlighted term within its surrounding text to provide nuanced explanations that capture both literal meaning and contextual significance."),
-        system_prompt = "Jesteś analitykiem literackim tworzącym zwięzłe, encyklopedyczne opisy elementów narracyjnych. Odpowiadaj wyłącznie w języku {language}. Używaj formatu Markdown i prostego języka w stylu Wikipedii. Opieraj się WYŁĄCZNIE na dostarczonym kontekście.",
-        user_prompt = [[
-Wyjaśnij pojęcie "{highlight}" z książki "{title}" autorstwa {author}.
-
+        desc = _("Generates a concise, encyclopedic explanation of a highlighted term or phrase — grounded strictly in the surrounding narrative context."),
+        system_prompt = [[
+Jesteś analitykiem literackim. Piszesz zwięzłe, encyklopedyczne noty w stylu Wikipedii.
 Zasady:
-- 180–220 słów.
-- Zwięźle i rzeczowo.
-- Opieraj się WYŁĄCZNIE na dostarczonym kontekście, bez wiedzy ogólnej.
-- Bez wstępu i podsumowania.
-- Krótkie akapity.
-- Jeśli pojęcie pojawia się w kontekście wielokrotnie — uwzględnij ewolucję jego znaczenia.
-
-Struktura:
+- Odpowiadaj WYŁĄCZNIE w języku {language}.
+- Używaj Markdown (nagłówki ###, pogrubienia, listy).
+- Opieraj się WYŁĄCZNIE na dostarczonym kontekście — bez wiedzy ogólnej.
+- Nie pisz wstępu ani podsumowania.]],
+        user_prompt = [[
+Wyjaśnij pojęcie **"{highlight}"** z książki *{title}* ({author}).
 
 ### Czym jest
-Krótka definicja na podstawie kontekstu.
+Definicja pojęcia na podstawie kontekstu. (2–3 zdania)
 
-### Rola w historii
-Jak funkcjonuje w narracji i jakie ma znaczenie dla fabuły.
+### Rola w narracji
+Jak funkcjonuje w fabule i co wnosi do historii. (2–3 zdania)
 
 ### Kluczowy szczegół
-1–2 ważne obserwacje kontekstowe.
+Najważniejsza obserwacja kontekstowa — np. symbolika, ewolucja znaczenia, ironia. (1–2 zdania)
 
+---
 Kontekst:
 {context}
 ]],
     },
-    dictionary = {
-        order = -10, -- negative number indicates a stub prompt
-        text = _("Dictionary"),
-        desc = _("This prompt acts as a dictionary for the highlighted text, to a word or phrase."),
-        -- this prompt is a stub (will not shown in follow-up questions)
-        -- it will be replaced by the actual prompt in the code below
-    },
+
+    -- -------------------------------------------------------------------------
+    -- QUICK NOTE — szybka notatka do zaznaczonego fragmentu
+    -- -------------------------------------------------------------------------
     quick_note = {
-        order = 5, --should be visible on additional questions dialog
+        order = 5,
         text = _("Quick Note"),
-        desc = _("This button creates a quick note with highlighted text."),
-        user_prompt = "", --dummy prompt
-        -- this prompt is a stub
+        desc = _("Creates a quick personal note attached to the highlighted passage."),
+        user_prompt = "",
     },
+
+    -- -------------------------------------------------------------------------
+    -- TRANSLATE — tłumaczenie zaznaczonego tekstu
+    -- -------------------------------------------------------------------------
     translate = {
         order = 30,
         text = _("Translate"),
-        desc = _("This prompt translates the highlighted text to another language."),
+        desc = _("Translates the highlighted text into the configured response language, preserving meaning and tone."),
         user_prompt = [[
-Translate the text into {language}.
-
-- Keep meaning and tone.
-- Sound natural.
-- Output only translation.
-- No notes unless absolutely necessary.
-
-Text:
-{highlight}
-]],
-    },
-    summarize = {
-        text = _("Summarize"),
-        order = 40,
-        desc = _("This prompt summarizes the highlighted text, capturing its main points and essential details."),
-        user_prompt = [[
-    Streść poniższy tekst po polsku.
-    
-    - Maksymalnie 5 zdań.
-    - Tylko najważniejsza myśl i kluczowe szczegóły.
-    - Bez powtórzeń i zbędnych słów.
-    - Odpowiedź wyłącznie po polsku.
-    
-    Tekst:
-    {highlight}]],
-    },
-    explain = {
-        text = _("Explain"),
-        order = 80,
-        desc = _("This prompt explains the highlighted text in detail, ensuring clarity and understanding."),
-        user_prompt = [[
-Wyjaśnij poniższy fragment z książki "{title}" autorstwa {author}.
+Przetłumacz poniższy tekst na {language}.
 
 Zasady:
-- 4–6 zdań.
-- Wyjaśnij co autor miał na myśli.
-- Krótko objaśnij trudne słowa lub pojęcia.
-- Zacznij bezpośrednio od wyjaśnienia.
-- Bez powtórzeń i zbędnych słów.
-- Odpowiedź wyłącznie w języku {language}.
+- Zachowaj znaczenie i ton oryginału.
+- Brzmij naturalnie w języku docelowym.
+- Zwróć TYLKO tłumaczenie — bez komentarzy.
 
 Tekst:
 {highlight}
 ]],
     },
+
+    -- -------------------------------------------------------------------------
+    -- SUMMARIZE — streszczenie zaznaczonego fragmentu
+    -- -------------------------------------------------------------------------
+    summarize = {
+        text = _("Summarize"),
+        order = 40,
+        desc = _("Summarizes the highlighted passage in 3–5 sentences, capturing only the essential meaning."),
+        user_prompt = [[
+Streść poniższy fragment w języku {language}.
+
+Zasady:
+- Maks. 5 zdań.
+- Tylko najważniejsza myśl i kluczowe szczegóły.
+- Bez powtórzeń i zbędnych słów.
+- Zacznij bezpośrednio od streszczenia.
+
+Tekst:
+{highlight}
+]],
+    },
+
+    -- -------------------------------------------------------------------------
+    -- EXPLAIN — wyjaśnienie trudnego fragmentu
+    -- -------------------------------------------------------------------------
+    explain = {
+        text = _("Explain"),
+        order = 80,
+        desc = _("Explains what the author meant in the highlighted passage — clarifies difficult words, metaphors, and implicit meaning."),
+        user_prompt = [[
+Wyjaśnij poniższy fragment z książki *{title}* ({author}).
+
+Zasady:
+- 4–6 zdań.
+- Co autor miał na myśli? Jaki jest sens tego fragmentu?
+- Krótko objaśnij trudne słowa, metafory lub aluzje.
+- Zacznij bezpośrednio od wyjaśnienia — bez wstępu.
+- Odpowiedź w języku {language}.
+
+Fragment:
+{highlight}
+]],
+    },
 }
 
 
+-- =============================================================================
+-- ASSISTANT PROMPTS — prompty systemowe i złożone funkcje asystenta
+-- =============================================================================
+
 local assistant_prompts = {
+
+    -- -------------------------------------------------------------------------
+    -- DEFAULT — domyślny prompt systemowy
+    -- -------------------------------------------------------------------------
     default = {
-        system_prompt = "You are a helpful AI assistant. Always respond in Markdown format.",
+        system_prompt = [[
+Jesteś pomocnym asystentem czytelnika. Odpowiadaj zwięźle i rzeczowo.
+Zawsze używaj Markdown. Odpowiadaj w języku {language}.]],
     },
+
+    -- -------------------------------------------------------------------------
+    -- RECAP — krótkie przypomnienie fabuły do bieżącego miejsca
+    -- -------------------------------------------------------------------------
     recap = {
-        system_prompt =
-        "You are an expert literary assistant that provides accurate information about books. Always respond in Markdown format.",
+        system_prompt = [[
+Jesteś asystentem literackim. Odpowiadaj zwięźle, używaj Markdown.
+NIE zdradzaj wydarzeń po bieżącym miejscu w książce.]],
         user_prompt = [[
-Very briefly recap the story up to {progress}%.
-
-- Focus on recent events.
-- No spoilers beyond this point.
-- Max 8–10 sentences.
-- Use bold for names only.
-
-Match tone of the book.
-Respond in {language}.
-]],
-    },
-    xray = {
-       system_prompt = "Jesteś doświadczonym asystentem literackim dostarczającym dokładnych informacji o książkach. Odpowiadaj wyłącznie w języku {language}. Używaj formatu Markdown. Nie zdradzaj wydarzeń wykraczających poza aktualny postęp czytelnika.",
-        user_prompt = [[
-Stwórz X-Ray dla książki "{title}" autorstwa {author}.
+Przypomnij mi w skrócie fabułę książki *{title}* ({author}) do miejsca, w którym jestem ({progress}%).
 
 Zasady:
-- Tylko krótkie zdania.
-- Bez zbędnych słów i powtórzeń.
-- NIE zdradzaj wydarzeń po {progress}% książki.
-- Odpowiedź wyłącznie w języku {language}.
-- Zwróć tylko strukturę X-Ray, nic więcej.
+- Maks. 8–10 zdań.
+- Skup się na ostatnich wydarzeniach i otwartych wątkach.
+- Bez spoilerów za {progress}%.
+- **Pogrub** tylko imiona postaci.
+- Dopasuj ton do klimatu książki.
+- Odpowiedź w {language}.
+]],
+    },
 
-Wymagana struktura (Markdown):
+    -- -------------------------------------------------------------------------
+    -- XRAY — strukturalny przegląd książki: postacie, miejsca, tematy
+    -- -------------------------------------------------------------------------
+    xray = {
+        system_prompt = [[
+Jesteś asystentem literackim tworzącym strukturalne zestawienia książek.
+Odpowiadaj WYŁĄCZNIE w języku {language}. Używaj Markdown.
+NIE zdradzaj wydarzeń po wskazanym miejscu w książce.]],
+        user_prompt = [[
+Stwórz X-Ray dla książki *{title}* ({author}) do {progress}% treści.
+
+Zasady:
+- Tylko krótkie, konkretne zdania.
+- NIE zdradzaj wydarzeń po {progress}%.
+- Bez zbędnych słów i powtórzeń.
+
+---
 
 ### Postacie
 Wymień 4–6 kluczowych postaci.
-- **Imię** — 1–2 krótkie zdania _<u>relacja</u>_
+- **Imię** — 1–2 zdania + _<u>relacja z głównym bohaterem</u>_
 
 ### Miejsca
 Wymień 3–5 ważnych miejsc.
-- **Miejsce** — 1 krótkie zdanie _<u>ważne wydarzenie</u>_
+- **Miejsce** — 1 zdanie + _<u>kluczowe wydarzenie</u>_
 
 ### Główne tematy
-Wymień 3–5 tematów.
-- **Temat** — 1 krótkie zdanie
+- **Temat** — 1 zdanie
 
 ### Kluczowe pojęcia
-Wymień 3–5 ważnych pojęć lub terminów.
-- **Pojęcie** — bardzo zwięzłe znaczenie
+- **Pojęcie** — bardzo zwięzłe znaczenie w tej książce
 
 ### Ostatnie punkty zwrotne
-Wymień 5–8 ważnych wydarzeń.
-- **Rozdział / Scena:** jedno krótkie zdanie
+Wymień 5–8 ważnych wydarzeń (od najnowszego).
+- **Scena/Rozdział:** jedno zdanie
 
 ### Powrót do lektury
-* **Gdzie skończyliśmy:** 1–2 krótkie zdania
-* **Aktualny cel:** 1 zdanie
-* **Otwarty konflikt:** 1 zdanie
-* **Nastrój:** 1 zdanie
-
-Książka: {title} autorstwa {author}
-Postęp: {progress}%
+- **Gdzie skończyłem:** 1–2 zdania
+- **Otwarty konflikt:** 1 zdanie
+- **Nastrój:** 1 zdanie
 ]],
     },
+
+    -- -------------------------------------------------------------------------
+    -- BOOK INFO — informacje o książce i autorze
+    -- -------------------------------------------------------------------------
     book_info = {
-        system_prompt =
-        "You are an expert literary assistant that provides accurate information about books. Always respond in Markdown format.",
+        system_prompt = [[
+Jesteś asystentem literackim. Podajesz rzetelne, zweryfikowane informacje o książkach.
+Używaj Markdown. Odpowiadaj w {language}.]],
         user_prompt = [[
-Generate detailed information about the book "{title}" by {author}. Provide the information in the following sections:
+Podaj informacje o książce *{title}* ({author}).
 
-### Book Information
-- Provide a summary of the book's plot or main themes.
-- Mention the genre, publication date, and any notable editions.
-- Include the number of pages or chapters if known.
+### O książce
+- Gatunek, rok wydania, liczba stron (jeśli znane).
+- Krótki opis fabuły lub głównych tematów (maks. 5 zdań).
 
-### About the Author
-- Give a brief biography of {author}.
-- Mention their other notable works.
-- Discuss their writing style or influences.
+### O autorze
+- Krótka nota biograficzna (3–4 zdania).
+- Inne ważne dzieła.
 
-### Historical Context
-- Explain the historical or cultural context in which the book was written or set.
-- Discuss how the book's themes relate to the time period.
+### Kontekst historyczny i literacki
+- W jakim czasie i kontekście powstała książka? (2–3 zdania)
+- Jak jej tematy odnoszą się do epoki?
 
-### Similar Books Recommendation
-- Recommend 3-5 similar books with the best ratings on goodreads.
-- Provide a brief description of each recommended book, highlighting the similarities. (e.g., theme, style, genre).
-- Output this part as list, not a table.
+### Podobne książki
+Polecane 3–5 książek o podobnym charakterze (temat, styl, gatunek):
+- **Tytuł** (*Autor*) — jedno zdanie o podobieństwie
 
-Ensure all information is accurate and based on known facts. Respond entirely in {language}.]],
-    },
-    dict = {
-        system_prompt =
-    "Jesteś literackim słownikiem wyjaśniającym słowa w kontekście książki. Zawsze odpowiadaj w języku {language}. Zawsze używaj poprawnego Markdown. Odpowiedzi mają być zwięzłe, konkretne i spójne.",
-
-        user_prompt = [[
-Wyjaśnij podświetlone słowo "{word}" z książki "{title}" autorstwa {author}, na podstawie dostarczonego kontekstu.
-
-## Kontekst z książki
-Zdania zawierające lub związane z "{word}":
-{context}
-
-## Zadanie
-
-### Format odpowiedzi (OBOWIĄZKOWY)
-
-- ZAWSZE rozpocznij od nagłówka:
-  ### {word}
-
-- ZAWSZE używaj poprawnego Markdown (nagłówki, listy, kursywa).
-
----
-
-Jeśli język słowa "{word}" różni się od {language}:
-
- **Tłumaczenie**: krótkie, jednoznaczne tłumaczenie słowa "{word}" na {language}.
-
- **Synonimy**: maksymalnie 3 synonimy dopasowane do znaczenia w TYM kontekście.
-
- **W książce**:
-  1. Znajdź zdanie zawierające "{word}" w kontekście.
-  2. Wybierz krótki fragment (kilka słów przed i po "{word}").
-  3. Przetłumacz CAŁY fragment na {language}.
-  4. Fragment MUSI być w 100% w {language} — bez żadnych słów w języku oryginalnym.
-  5. Słowo "{word}" również musi być przetłumaczone.
-
-  Format:
-  *"...przetłumaczony fragment..."*
-
----
-
-Jeśli słowo "{word}" jest w języku {language}:
-
-
- **Znaczenie**: krótko, znaczenie, definicja "{word}" w formie listy, max 5 .
-
-
- **Synonimy**: maksymalnie 3 synonimy dopasowane do kontekstu.
-
- **Kontekst**: krótkie, precyzyjne wyjaśnienie znaczenia słowa w TYM kontekście. 
-  Jeśli użycie jest symboliczne, archaiczne, metaforyczne lub gatunkowe — zaznacz to krótko.
-
----
-
-## Ważne zasady (KRYTYCZNE)
-
-- NIE pokazuj oryginalnego zdania w sekcji „W książce”.
-- NIE mieszaj języków — cała odpowiedź musi być w {language}.
-- NIE pokazuj najpierw oryginału, a potem tłumaczenia.
-- ZAWSZE tłumacz całe wyrażenie, nie tylko jego część.
-- Zachowuj spójny, czysty Markdown.
-- NIE dodawaj żadnych dodatkowych komentarzy ani wstępu.
-
-Pokaż tylko nagłówek i wymagane sekcje.
+Odpowiedź w {language}.
 ]],
     },
 
+    -- -------------------------------------------------------------------------
+    -- DICT — wewnętrzny prompt słownika (używany przez kod asystenta)
+    -- -------------------------------------------------------------------------
+    dict = {
+        system_prompt = [[
+Jesteś słownikiem literackim. Wyjaśniasz słowa w kontekście czytanej książki.
+Odpowiadaj WYŁĄCZNIE w języku {language}. Używaj Markdown. Bądź zwięzły.]],
+        user_prompt = [[
+Wyjaśnij słowo **"{word}"** z książki *{title}* ({author}).
+
+### {word}
+**Tłumaczenie / Definicja:** [jeśli obcy język: tłumaczenie na {language}; jeśli {language}: definicja słownikowa]
+
+**Znaczenie w kontekście:** [co znaczy w tym konkretnym fragmencie — 1–2 zdania]
+
+**Synonimy:** [maks. 3, dopasowane do kontekstu]
+
+**Fragment:**
+> [krótki cytat z tłumaczeniem lub objaśnieniem, jeśli potrzebne]
+
+---
+Kontekst:
+{context}
+]],
+    },
+
+    -- -------------------------------------------------------------------------
+    -- DICT EN→PL — słownik angielsko-polski (używany przez assistant_dictdialog)
+    -- -------------------------------------------------------------------------
+    dict_en_pl = {
+        system_prompt = [[
+Jesteś słownikiem angielsko-polskim dla czytelnika książek. Odpowiadaj WYŁĄCZNIE po polsku.
+Używaj Markdown. Bądź zwięzły i konkretny — czytelnik chce szybko wrócić do lektury.]],
+        user_prompt = [[
+Wyjaśnij angielskie słowo lub wyrażenie **"{word}"** z książki *{title}* ({author}).
+
+### {word}
+**Tłumaczenie:** [polskie tłumaczenie; podaj 2–3 warianty jeśli polisemiczne]
+
+**Znaczenie w kontekście:** [co dokładnie znaczy w tym fragmencie — 1–2 zdania]
+
+**Synonimy EN:** [maks. 3 angielskie synonimy pasujące do kontekstu]
+
+**Fragment w tłumaczeniu:**
+> [przetłumacz na polski krótki fragment zawierający "{word}"; słowo "{word}" również przetłumacz]
+
+---
+Kontekst:
+{context}
+]],
+    },
+
+    -- -------------------------------------------------------------------------
+    -- DICT PL — słownik języka polskiego (używany przez assistant_dictdialog)
+    -- -------------------------------------------------------------------------
+    dict_pl = {
+        system_prompt = [[
+Jesteś słownikiem języka polskiego dla czytelnika książek. Odpowiadaj WYŁĄCZNIE po polsku.
+Używaj Markdown. Bądź zwięzły — czytelnik chce szybko wrócić do lektury.
+Zwracaj szczególną uwagę na archaizmy, użycie metaforyczne, regionalizmy i słownictwo specjalistyczne.]],
+        user_prompt = [[
+Wyjaśnij polskie słowo lub wyrażenie **"{word}"** z książki *{title}* ({author}).
+
+### {word}
+**Definicja:** [znaczenie słownikowe; maks. 3 punkty jeśli polisemiczne]
+
+**Znaczenie w kontekście:** [co dokładnie znaczy w tym fragmencie — 1–2 zdania; zaznacz jeśli archaiczne, metaforyczne lub specjalistyczne]
+
+**Synonimy:** [maks. 3 synonimy pasujące do kontekstu]
+
+---
+Kontekst:
+{context}
+]],
+    },
+
+    -- -------------------------------------------------------------------------
+    -- SUGGESTIONS — propozycje pytań uzupełniających (dołączane do odpowiedzi)
+    -- -------------------------------------------------------------------------
     suggestions_prompt = T([[
-At the end of your response, first generate 2-3 questions in {language} language based on your answer. Critically, these questions **must not contain any quotation marks and parentheses, or any other punctuation whatsoever**. Only use letters and spaces.
-Then, display these questions as hyperlinks in a **Markdown unordered list** using the following exact format:
+Na końcu odpowiedzi zaproponuj 2–3 krótkie pytania uzupełniające w języku {language}.
+Pytania muszą wynikać z treści odpowiedzi.
+Krytyczne: pytania NIE mogą zawierać znaków interpunkcyjnych — tylko litery i spacje.
+Sformatuj jako listę Markdown z hiperłączami:
+
 ```
 ---
 __%1__
 
-- [Question 1](#q:Question 1)
-- [Question 2](#q:Question 2)
+- [Pytanie 1](#q:Pytanie 1)
+- [Pytanie 2](#q:Pytanie 2)
 ```
-]], _("You may find these topics interesting:")),
+]], _("Możesz też zapytać:")),
 }
 
 
+-- =============================================================================
+-- HELPERS
+-- =============================================================================
+
 local function table_merge(t1, t2)
     local result = {}
-    for k, v in pairs(t1) do
-        result[k] = v
-    end
+    for k, v in pairs(t1) do result[k] = v end
     for k, v in pairs(t2) do
         if type(v) == "table" and type(result[k]) == "table" then
             result[k] = table_merge(result[k], v)
@@ -300,71 +344,50 @@ local function table_merge(t1, t2)
     return result
 end
 
-
 local function table_sort(t, key)
     table.sort(t, function(a, b)
-        if a[key] == nil or b[key] == nil then
-            return false
-        end
+        if a[key] == nil or b[key] == nil then return false end
         return a[key] < b[key]
     end)
 end
 
 
+-- =============================================================================
+-- MODULE
+-- =============================================================================
+
 local M = {
-    custom_prompts = custom_prompts,       -- Custom prompts for the AI
-    assistant_prompts = assistant_prompts, -- Preconfigured prompts for the AI
-    merged_prompts = nil,                  -- Merged prompts from custom and configuration
-    sorted_custom_prompts = nil,           -- Sorted custom prompts
-    show_on_main_popup_prompts = nil,      -- Prompts that should be shown on the main popup
+    custom_prompts            = custom_prompts,
+    assistant_prompts         = assistant_prompts,
+    merged_prompts            = nil,
+    sorted_custom_prompts     = nil,
+    show_on_main_popup_prompts = nil,
 }
 
--- Func description:
--- This function returns the merged custom prompts from the configuration and custom prompts.
--- It merges the custom prompts with the configuration prompts, if available.
--- return table of merged prompts
--- Example: { translate = { text = "Translate", user_prompt = "...", order = 1, show_on_main_popup = true }, ... }
 M.getMergedCustomPrompts = function(conf_prompts)
-    if M.merged_prompts then
-        return M.merged_prompts
-    end
-
-    -- Merge custom prompts with configuration prompts
+    if M.merged_prompts then return M.merged_prompts end
     if conf_prompts then
         M.merged_prompts = table_merge(custom_prompts, conf_prompts)
     else
         M.merged_prompts = custom_prompts
     end
-
     return M.merged_prompts
 end
 
--- Func description:
--- This function returns a list of custom prompts sorted by their order.
--- filter_func: optional function to filter prompts, if it returns false, the prompt will be skipped.
--- return list item: {idx, order, text}
 M.getSortedCustomPrompts = function(filter_func)
-    if M.sorted_custom_prompts then
-        return M.sorted_custom_prompts
-    end
-
-    -- Sort the merged prompts by order
+    if M.sorted_custom_prompts then return M.sorted_custom_prompts end
     local sorted_prompts = {}
     for prompt_index, prompt in pairs(M.merged_prompts or custom_prompts) do
-        -- Only add the prompt if there is no filter, or if the filter function returns true.
         if not filter_func or filter_func(prompt, prompt_index) == true then
-            table.insert(sorted_prompts,
-                {
-                    idx = prompt_index,
-                    order = prompt.order or 1000,
-                    text = prompt.text or prompt_index,
-                    desc = prompt
-                        .desc or ""
-                })
+            table.insert(sorted_prompts, {
+                idx   = prompt_index,
+                order = prompt.order or 1000,
+                text  = prompt.text or prompt_index,
+                desc  = prompt.desc or "",
+            })
         end
     end
     table_sort(sorted_prompts, "order")
-
     return sorted_prompts
 end
 

@@ -9,7 +9,10 @@ local T = require("ffi/util").template
 local Event = require("ui/event")
 local koutil = require("util")
 local assistant_utils = require("assistant_utils")
-local dict_prompts = require("assistant_prompts").assistant_prompts.dict
+local assistant_prompts = require("assistant_prompts").assistant_prompts
+local dict_prompts      = assistant_prompts.dict
+local dict_en_pl_prompts = assistant_prompts.dict_en_pl
+local dict_pl_prompts    = assistant_prompts.dict_pl
 
 -- Expand context sentences to include surrounding sentences for pronouns and related narrative
 -- This captures "he", "she", "they" and nearby actions that provide important context
@@ -191,6 +194,10 @@ local function showDictionaryDialog(assistant, highlightedText, message_history,
         if prompt_type == "term_xray" then
             local term_xray_prompts = require("assistant_prompts").custom_prompts.term_xray
             system_prompt = term_xray_prompts.system_prompt
+        elseif prompt_type == "dict_en_pl" then
+            system_prompt = dict_en_pl_prompts.system_prompt
+        elseif prompt_type == "dict_pl" then
+            system_prompt = dict_pl_prompts.system_prompt
         else
             system_prompt = dict_prompts.system_prompt
         end
@@ -399,6 +406,27 @@ local function showDictionaryDialog(assistant, highlightedText, message_history,
                     title = book_title,
                     author = book_author,
                     user_input = ""
+            })
+        }
+        table.insert(message_history, context_message)
+    elseif prompt_type == "dict_en_pl" or prompt_type == "dict_pl" then
+        local chosen = (prompt_type == "dict_en_pl") and dict_en_pl_prompts or dict_pl_prompts
+        user_prompt = chosen.user_prompt
+        context_content = prev_context .. highlightedText .. next_context
+        title = (prompt_type == "dict_en_pl") and _("Dictionary EN→PL") or _("Słownik PL")
+        loading_message = (prompt_type == "dict_en_pl") and _("Loading Dictionary EN→PL ...") or _("Ładowanie Słownika PL ...")
+
+        local prop = ui.document:getProps()
+        local book_title = prop.title or "Unknown Title"
+        local book_author = prop.authors or "Unknown Author"
+        local context_message = {
+            role = "user",
+            content = string.gsub(user_prompt, "{(%w+)}", {
+                    language = dict_language,
+                    context = context_content,
+                    word = highlightedText,
+                    title = book_title,
+                    author = book_author,
             })
         }
         table.insert(message_history, context_message)

@@ -822,7 +822,35 @@ function Assistant:onDictButtonsReady(dict_popup, dict_buttons)
       end,
     })
   end
+if self.settings:readSetting("dict_popup_show_dict_en_pl", true) then
+    table.insert(plugin_buttons, {
+      id = "assistant_dict_en_pl",
+      text = _("Dictionary EN→PL") .. " (AI)",
+      font_bold = true,
+      callback = function()
+          NetworkMgr:runWhenOnline(function()
+              Trapper:wrap(function()
+                showDictionaryDialog(self, dict_popup.word, nil, "dict_en_pl")
+              end)
+          end)
+      end,
+    })
+  end
 
+  if self.settings:readSetting("dict_popup_show_dict_pl", true) then
+    table.insert(plugin_buttons, {
+      id = "assistant_dict_pl",
+      text = _("Słownik PL") .. " (AI)",
+      font_bold = true,
+      callback = function()
+          NetworkMgr:runWhenOnline(function()
+              Trapper:wrap(function()
+                showDictionaryDialog(self, dict_popup.word, nil, "dict_pl")
+              end)
+          end)
+      end,
+    })
+  end
   if self.settings:readSetting("dict_popup_show_custom_prompts", false) then
     -- Collect custom prompts with show_on_dictionary_popup = true
     local custom_prompts = {}
