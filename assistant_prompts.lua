@@ -343,7 +343,7 @@ __%1__
 - [Pytanie 1](#q:Pytanie 1)
 - [Pytanie 2](#q:Pytanie 2)
 ```
-]], _("Możesz też zapytać:")),
+]], _("You may also ask:")),
 }
 
 
