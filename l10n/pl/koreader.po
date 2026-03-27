@@ -450,7 +450,7 @@ msgstr  "Duże okno strumieniowania"
 #. @translators: functional overriding
 #: ../assistant_settings.lua:396
 msgid   "KOReader Tweaks & Overrides"
-msgstr  "Modyfikacje i nadpisania KOReadera"
+msgstr  "Zaawansowane ustawienia"
 
 #. @translators: 'Translate' is a built-in function
 #: ../assistant_settings.lua:400
@@ -597,15 +597,15 @@ msgstr  "Zadaj pytanie AI"
 
 #: ../main.lua:85 ../main.lua:178
 msgid   "AI Recaps"
-msgstr  "Podsumowania AI"
+msgstr  "Streszczenie dotychczasowej treści "
 
 #: ../main.lua:93 ../main.lua:167
 msgid   "AI X-Ray"
-msgstr  "AI Rentgen"
+msgstr  "AI X-Ray"
 
 #: ../main.lua:109 ../main.lua:156
 msgid   "Book Summary & Recs"
-msgstr  "Podsumowanie i polecenia"
+msgstr  "Podsumuj książkę i poleć podobne"
 
 #: ../main.lua:148
 msgid   "Enter a question to ask AI."
@@ -613,7 +613,7 @@ msgstr  "Wpisz pytanie do AI"
 
 #: ../main.lua:153
 msgid   "Book-Level Built-in Prompts"
-msgstr  "Wbudowane monity na poziomie książki"
+msgstr  "Zapytaj o książkę"
 
 #: ../main.lua:162
 msgid   "Summary of the book, author biography, historical context, and a list of similar book recommendations with descriptions."
