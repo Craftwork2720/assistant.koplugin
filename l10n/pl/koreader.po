@@ -591,6 +591,22 @@ msgstr  "Słowo skopiowano do schowka."
 msgid   "Selection copied to clipboard."
 msgstr  "Zaznaczenie skopiowano do schowka."
 
+#: ../main.lua:310
+msgid   "Ask a Question"
+msgstr  "Zadaj pytanie"
+
+#: ../main.lua:316
+msgid   "Ask a general question to the AI (not book-related)."
+msgstr  "Zadaj ogólne pytanie do AI (niezwiązane z książkami)."
+
+#: ../main.lua:316
+msgid   "Ask a general question"
+msgstr  "Zadaj ogólne pytanie"
+
+#: ../main.lua:316
+msgid   "Ask anything..."
+msgstr  "Zapytaj o cokolwiek..."
+
 #: ../main.lua:77 ../main.lua:142
 msgid   "Ask the AI a question"
 msgstr  "Zadaj pytanie AI"
