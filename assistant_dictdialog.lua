@@ -433,8 +433,18 @@ local function showDictionaryDialog(assistant, highlightedText, message_history,
     else
         user_prompt = dict_prompts.user_prompt
         context_content = prev_context .. highlightedText .. next_context
-        title = _("Dictionary")
-        loading_message = _("Loading AI Dictionary ...")
+        title = _("SJP")
+        loading_message = _("Loading AI Dictionary (SJP)...")
+        local context_message = {
+            role = "user",
+            content = string.gsub(user_prompt, "{(%w+)}", {
+                    language = dict_language,
+                    context = context_content,
+                    word = highlightedText
+            })
+        }
+        table.insert(message_history, context_message)
+    else
         local context_message = {
             role = "user",
             content = string.gsub(user_prompt, "{(%w+)}", {
