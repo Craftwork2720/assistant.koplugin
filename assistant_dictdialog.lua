@@ -413,8 +413,8 @@ local function showDictionaryDialog(assistant, highlightedText, message_history,
         local chosen = (prompt_type == "dict_en_pl") and dict_en_pl_prompts or dict_pl_prompts
         user_prompt = chosen.user_prompt
         context_content = prev_context .. highlightedText .. next_context
-        title = (prompt_type == "dict_en_pl") and _("Dictionary EN→PL") or _("Słownik PL")
-        loading_message = (prompt_type == "dict_en_pl") and _("Loading Dictionary EN→PL ...") or _("Ładowanie Słownika PL ...")
+        title = (prompt_type == "dict_en_pl") and _("EN→PL") or _("SJP")
+        loading_message = (prompt_type == "dict_en_pl") and _("Loading EN→PL ...") or _("Ładowanie SJP ...")
 
         local prop = ui.document:getProps()
         local book_title = prop.title or "Unknown Title"

@@ -825,7 +825,7 @@ function Assistant:onDictButtonsReady(dict_popup, dict_buttons)
 if self.settings:readSetting("dict_popup_show_dict_en_pl", true) then
     table.insert(plugin_buttons, {
       id = "assistant_dict_en_pl",
-      text = _("Dictionary EN→PL") .. " (AI)",
+      text = _("EN→PL") .. " (AI)",
       font_bold = true,
       callback = function()
           NetworkMgr:runWhenOnline(function()
@@ -840,7 +840,7 @@ if self.settings:readSetting("dict_popup_show_dict_en_pl", true) then
   if self.settings:readSetting("dict_popup_show_dict_pl", true) then
     table.insert(plugin_buttons, {
       id = "assistant_dict_pl",
-      text = _("Słownik PL") .. " (AI)",
+      text = _("SJP") .. " (AI)",
       font_bold = true,
       callback = function()
           NetworkMgr:runWhenOnline(function()

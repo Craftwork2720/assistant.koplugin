@@ -430,7 +430,7 @@ SettingsDialog.genMenuSettings = function (assistant)
                     end
                 },
                 {
-                    text = _("Show Dictionary EN→PL(AI) in Dictionary Popup"),
+                    text = _("Show EN→PL(AI) in Dictionary Popup"),
                     checked_func = function () return assistant.settings:readSetting("dict_popup_show_dict_en_pl", true) end,
                     callback = function()
                         assistant.settings:toggle("dict_popup_show_dict_en_pl")
@@ -438,7 +438,7 @@ SettingsDialog.genMenuSettings = function (assistant)
                     end
                 },
                 {
-                    text = _("Show Słownik PL(AI) in Dictionary Popup"),
+                    text = _("Show SJP(AI) in Dictionary Popup"),
                     checked_func = function () return assistant.settings:readSetting("dict_popup_show_dict_pl", true) end,
                     callback = function()
                         assistant.settings:toggle("dict_popup_show_dict_pl")
