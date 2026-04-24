@@ -271,7 +271,7 @@ Rules:
     dict_en_pl = {
     system_prompt =
     "You are a precise English-Polish dictionary assistant. You MUST rely on the provided context from the book. Do NOT use generic meanings if context suggests otherwise. Respond ONLY in Polish.",
-    user_prompt = T([[
+    user_prompt = [[
 Explain the English word "{word}" based on the book context.
 
 Context (fragment książki z otoczeniem słowa):
@@ -279,33 +279,31 @@ Context (fragment książki z otoczeniem słowa):
 
 ### {word}
 
-**%1**  
-Znaczenie w tym konkretnym fragmencie.
+**Znaczenie:**  
+Znaczenie w tym konkretnym fragmencie. Jeśli słowo jest częścią frazy (phrasal verb, idiom, fixed expression), podaj znaczenie **całej frazy**, a nie tylko samego słowa.
 
-**%2**  
-Najlepsze tłumaczenie w tym kontekście:  
+**Tłumaczenie:**  
+(Najlepsze tłumaczenie w tym kontekście, jeśli to fraza – tłumaczenie całej frazy)
 **→ tłumaczenie**
 
-**%3**  
-Pełne tłumaczenie zdania:  
-(zachowaj styl książki i wyróżnij **słowo**)
+**Zdanie:**  
+(Pełne tłumaczenie zdania)
+(zachowaj styl książki i wyróżnij **słowo** lub **całą frazę**, jeśli słowo jest jej częścią)
 
 Rules:
 - Najpierw analizuj kontekst, dopiero potem tłumacz
+- Jeśli słowo jest częścią frazy, podaj znaczenie całej frazy
 - Tłumaczenie musi pasować do zdania, nie tylko do słowa
 - Unikaj „słownikowych” oderwanych tłumaczeń
 - Krótko i bardzo czytelnie
 ]],
-        _("Znaczenie"),
-        _("Tłumaczenie"),
-        _("Zdanie"))
 },
 
 
     dict_pl = {
     system_prompt =
     "You are a precise Polish dictionary assistant. You MUST interpret meaning based on the provided book context. Respond ONLY in Polish.",
-    user_prompt = T([[
+    user_prompt = [[
 Wyjaśnij słowo "{word}" na podstawie kontekstu z książki.
 
 Kontekst:
@@ -313,10 +311,10 @@ Kontekst:
 
 ### {word}
 
-**%1**  
+**Znaczenie:**  
 Znaczenie w tym konkretnym użyciu (nie ogólne).
 
-**%2**
+**Synonimy:**
 - synonim pasujący do kontekstu
 - synonim pasujący do kontekstu
 - synonim pasujący do kontekstu
@@ -327,8 +325,6 @@ Zasady:
 - Jeśli kontekst jest niejasny — napisz to
 - Krótko i czytelnie
 ]],
-        _("Znaczenie"),
-        _("Synonimy"))
 },
 
 

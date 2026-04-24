@@ -19,6 +19,14 @@ function DeepSeekHandler:query(message_history, deepseek_settings)
         max_tokens = koutil.tableGetValue(deepseek_settings, "additional_parameters", "max_tokens")
     }
 
+    local thinking_config = koutil.tableGetValue(deepseek_settings, "additional_parameters", "thinking")
+    if thinking_config == nil then
+        thinking_config = { type = "enabled" }   -- <<< domyślnie włączone
+    elseif type(thinking_config) == "boolean" then
+        thinking_config = { type = thinking_config and "enabled" or "disabled" }
+    end
+    requestBodyTable.thinking = thinking_config
+
     local requestBody = json.encode(requestBodyTable)
     local headers = {
         ["Content-Type"] = "application/json",
