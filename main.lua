@@ -779,13 +779,59 @@ function Assistant:registerDictButtons()
   if not CONFIGURATION then return end
   if not self.ui or not self.ui.dictionary then return end
 
+  -- Migrate old dict_popup_show_* settings to the new KOReader button config
+  if not G_reader_settings:readSetting("dict_button_config") then
+    local button_ids = {
+      "assistant_01_wikipedia",
+      "assistant_02_term_xray",
+      "assistant_03_dictionary",
+      "assistant_04_dict_en_pl",
+      "assistant_05_dict_pl",
+    }
+    local setting_keys = {
+      "dict_popup_show_wikipedia",
+      "dict_popup_show_term_xray",
+      "dict_popup_show_dictionary",
+      "dict_popup_show_dict_en_pl",
+      "dict_popup_show_dict_pl",
+    }
+    local defaults = { true, false, true, true, true }
+
+    local order = {}
+    for i, id in ipairs(button_ids) do
+      if self.settings:readSetting(setting_keys[i], defaults[i]) then
+        table.insert(order, id)
+      end
+      self.settings:delSetting(setting_keys[i])
+    end
+    self.settings:delSetting("dict_popup_show_custom_prompts")
+
+    local layout = {}
+    local row_count = {}
+    local current_row = {}
+    for _, id in ipairs(order) do
+      table.insert(current_row, id)
+      if #current_row >= 3 then
+        table.insert(layout, current_row)
+        table.insert(row_count, 3)
+        current_row = {}
+      end
+    end
+    if #current_row > 0 then
+      table.insert(layout, current_row)
+      table.insert(row_count, 3)
+    end
+
+    G_reader_settings:saveSetting("dict_button_config", { layout = layout, order = order, row_count = row_count })
+    self.settings:flush()
+  end
+
   -- 1. Wikipedia (AI)
   self.ui.dictionary:addToDictButtons({
     id = "assistant_01_wikipedia",
-    conditional = true,
-    show_func = function()
-      return self.settings:readSetting("dict_popup_show_wikipedia", true)
-    end,
+    menu_text = _("Wikipedia (AI)"),
+    insert_first = true,
+    show_func = function() return true end,
     text_func = function()
       return _("Wikipedia") .. " (AI)"
     end,
@@ -801,10 +847,9 @@ function Assistant:registerDictButtons()
   -- 2. Term X-Ray (AI)
   self.ui.dictionary:addToDictButtons({
     id = "assistant_02_term_xray",
-    conditional = true,
-    show_func = function()
-      return self.settings:readSetting("dict_popup_show_term_xray", false)
-    end,
+    menu_text = _("Term X-Ray (AI)"),
+    insert_first = true,
+    show_func = function() return true end,
     text_func = function()
       return _("Term X-Ray") .. " (AI)"
     end,
@@ -820,10 +865,9 @@ function Assistant:registerDictButtons()
   -- 3. Dictionary (AI)
   self.ui.dictionary:addToDictButtons({
     id = "assistant_03_dictionary",
-    conditional = true,
-    show_func = function()
-      return self.settings:readSetting("dict_popup_show_dictionary", true)
-    end,
+    menu_text = _("Dictionary (AI)"),
+    insert_first = true,
+    show_func = function() return true end,
     text_func = function()
       return _("Dictionary") .. " (AI)"
     end,
@@ -839,10 +883,9 @@ function Assistant:registerDictButtons()
   -- 4. EN→PL (AI)
   self.ui.dictionary:addToDictButtons({
     id = "assistant_04_dict_en_pl",
-    conditional = true,
-    show_func = function()
-      return self.settings:readSetting("dict_popup_show_dict_en_pl", true)
-    end,
+    menu_text = _("EN→PL (AI)"),
+    insert_first = true,
+    show_func = function() return true end,
     text_func = function()
       return _("EN→PL") .. " (AI)"
     end,
@@ -858,10 +901,9 @@ function Assistant:registerDictButtons()
   -- 5. SJP (AI)
   self.ui.dictionary:addToDictButtons({
     id = "assistant_05_dict_pl",
-    conditional = true,
-    show_func = function()
-      return self.settings:readSetting("dict_popup_show_dict_pl", true)
-    end,
+    menu_text = _("SJP (AI)"),
+    insert_first = true,
+    show_func = function() return true end,
     text_func = function()
       return _("SJP") .. " (AI)"
     end,

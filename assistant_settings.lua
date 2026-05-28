@@ -422,46 +422,6 @@ SettingsDialog.genMenuSettings = function (assistant)
                     end
                 },
                 {
-                    text = _("Show Dictionary(AI) in Dictionary Popup"),
-                    checked_func = function () return assistant.settings:readSetting("dict_popup_show_dictionary", true) end,
-                    callback = function()
-                        assistant.settings:toggle("dict_popup_show_dictionary")
-                        assistant.updated = true
-                    end
-                },
-                {
-                    text = _("Show EN→PL(AI) in Dictionary Popup"),
-                    checked_func = function () return assistant.settings:readSetting("dict_popup_show_dict_en_pl", true) end,
-                    callback = function()
-                        assistant.settings:toggle("dict_popup_show_dict_en_pl")
-                        assistant.updated = true
-                    end
-                },
-                {
-                    text = _("Show SJP(AI) in Dictionary Popup"),
-                    checked_func = function () return assistant.settings:readSetting("dict_popup_show_dict_pl", true) end,
-                    callback = function()
-                        assistant.settings:toggle("dict_popup_show_dict_pl")
-                        assistant.updated = true
-                    end
-                },
-                {
-                    text = _("Show Wikipedia(AI) in Dictionary Popup"),
-                    checked_func = function () return assistant.settings:readSetting("dict_popup_show_wikipedia", true) end,
-                    callback = function()
-                        assistant.settings:toggle("dict_popup_show_wikipedia")
-                        assistant.updated = true
-                    end
-                },
-                {
-                    text = _("Show Term X-Ray(AI) in Dictionary Popup"),
-                    checked_func = function () return assistant.settings:readSetting("dict_popup_show_term_xray", false) end,
-                    callback = function()
-                        assistant.settings:toggle("dict_popup_show_term_xray")
-                        assistant.updated = true
-                    end
-                },
-                {
                     text = _("Show Custom Prompts in Dictionary Popup"),
                     checked_func = function () return assistant.settings:readSetting("dict_popup_show_custom_prompts", false) end,
                     callback = function()
