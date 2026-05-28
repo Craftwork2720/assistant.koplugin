@@ -125,6 +125,20 @@ local CONFIGURATION = {
                 max_tokens = 4096
             }
         },
+        mimo = {
+            model = "mimo-v2.5-pro", -- model list: https://api.xiaomimimo.com
+            base_url = "https://api.xiaomimimo.com/v1/chat/completions",
+            api_key = "your-mimo-api-key",
+            additional_parameters = {
+                temperature = 1.0,
+                max_tokens = 4096,
+                top_p = 0.95,
+                frequency_penalty = 0,
+                presence_penalty = 0,
+                -- To disable thinking, set:
+                -- thinking = { type = "disabled" }
+            }
+        },
         groq = {
             model = "llama-3.3-70b-versatile", -- model list: https://console.groq.com/docs/models
             base_url = "https://api.groq.com/openai/v1/chat/completions",
