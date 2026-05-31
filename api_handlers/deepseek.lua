@@ -23,7 +23,7 @@ function DeepSeekHandler:query(message_history, deepseek_settings)
         for _, option in ipairs({"temperature", "top_p", "max_tokens", "max_completion_tokens",
                                     "frequency_penalty", "presence_penalty", "stop", "stream",
                                     "thinking", "logprobs", "top_logprobs", "response_format", "tools"}) do
-            if deepseek_settings.additional_parameters[option] then
+            if deepseek_settings.additional_parameters[option] ~= nil then
                 requestBodyTable[option] = deepseek_settings.additional_parameters[option]
             end
         end
