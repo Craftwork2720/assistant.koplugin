@@ -662,17 +662,6 @@ function Assistant:init()
   -- Conditionally override translate method based on user setting
   self:syncTranslateOverride()
 
-  -- Register Assistant buttons with new KOReader dict API (PR #15184+)
-  -- Safe no-op on older versions where addToDictButtons doesn't exist.
-  if self.ui and self.ui.dictionary
-      and type(self.ui.dictionary.addToDictButtons) == "function" then
-    local buttons = self:_buildAssistantDictButtons(nil)
-    for _, button in ipairs(buttons) do
-      self.ui.dictionary:addToDictButtons(button)
-    end
-  end
-
-
   self.assistant_dialog = AssistantDialog:new(self, CONFIGURATION)
   
   -- Ensure custom prompts from configuration are merged before building menus
@@ -681,6 +670,8 @@ function Assistant:init()
   
   if self.ui.document then
     -- Reader specific
+    self:registerDictButtons()
+
     -- Auto Recap Feature (hook before a book is opened)
     if self.settings:readSetting("enable_auto_recap", false) then
       self:_hookRecap()
@@ -801,128 +792,172 @@ function Assistant:addMainButton(prompt_idx, prompt)
   end)
 end
 
--- Builds the Assistant button specs for the dict popup.
--- Used by both the new addToDictButtons API and the legacy onDictButtonsReady hook.
--- Returns an array of button specs.
-function Assistant:_buildAssistantDictButtons(dict_popup_arg)
-  if not CONFIGURATION then return {} end
+function Assistant:registerDictButtons()
+  if not CONFIGURATION then return end
+  if not self.ui or not self.ui.dictionary then return end
 
-  local plugin_buttons = {}
-  
-  if self.settings:readSetting("dict_popup_show_wikipedia", true) then
-    table.insert(plugin_buttons, {
-      id = "assistant_wikipedia",
-      font_bold = true,
-      text = _("Wikipedia") .. " (AI)",
-      callback = function(widget_instance)
-          local popup = widget_instance or dict_popup_arg
-          local word = popup and popup.word
-          NetworkMgr:runWhenOnline(function()
-              Trapper:wrap(function()
-                self.assistant_dialog:showCustomPrompt(word, "wikipedia")
-              end)
-          end)
-      end,
-    })
-  end
+  -- Migrate old dict_popup_show_* settings to the new KOReader button config
+  if not G_reader_settings:readSetting("dict_button_config") then
+    local button_ids = {
+      "assistant_01_wikipedia",
+      "assistant_02_term_xray",
+      "assistant_03_dictionary",
+      "assistant_04_dict_en_pl",
+      "assistant_05_dict_pl",
+    }
+    local setting_keys = {
+      "dict_popup_show_wikipedia",
+      "dict_popup_show_term_xray",
+      "dict_popup_show_dictionary",
+      "dict_popup_show_dict_en_pl",
+      "dict_popup_show_dict_pl",
+    }
+    local defaults = { true, false, true, true, true }
 
-  if self.settings:readSetting("dict_popup_show_term_xray", false) then
-    table.insert(plugin_buttons, {
-      id = "assistant_term_xray",
-      font_bold = true,
-      text = _("Term X-Ray") .. " (AI)",
-      callback = function(widget_instance)
-          local popup = widget_instance or dict_popup_arg
-          local word = popup and popup.word
-          NetworkMgr:runWhenOnline(function()
-              Trapper:wrap(function()
-                showDictionaryDialog(self, word, nil, "term_xray")
-              end)
-          end)
-      end,
-    })
-  end
+    local order = {}
+    for i, id in ipairs(button_ids) do
+      if self.settings:readSetting(setting_keys[i], defaults[i]) then
+        table.insert(order, id)
+      end
+      self.settings:delSetting(setting_keys[i])
+    end
+    self.settings:delSetting("dict_popup_show_custom_prompts")
 
-  if self.settings:readSetting("dict_popup_show_dictionary", true) then
-    table.insert(plugin_buttons, {
-      id = "assistant_dictionary",
-      text = _("Dictionary") .. " (AI)",
-      font_bold = true,
-      callback = function(widget_instance)
-          local popup = widget_instance or dict_popup_arg
-          local word = popup and popup.word
-          NetworkMgr:runWhenOnline(function()
-              Trapper:wrap(function()
-                showDictionaryDialog(self, word)
-              end)
-          end)
-      end,
-    })
-  end
-
-  if self.settings:readSetting("dict_popup_show_custom_prompts", false) then
-    -- Collect custom prompts with show_on_dictionary_popup = true
-    local custom_prompts = {}
-    if CONFIGURATION and CONFIGURATION.features and CONFIGURATION.features.prompts then
-      for prompt_key, prompt_config in pairs(CONFIGURATION.features.prompts) do
-        if prompt_config.show_on_dictionary_popup == true and prompt_config.visible ~= false then
-          table.insert(custom_prompts, {
-            id = prompt_key,
-            config = prompt_config
-          })
-        end
+    local layout = {}
+    local row_count = {}
+    local current_row = {}
+    for _, id in ipairs(order) do
+      table.insert(current_row, id)
+      if #current_row >= 3 then
+        table.insert(layout, current_row)
+        table.insert(row_count, 3)
+        current_row = {}
       end
     end
-
-    -- Calculate how many custom prompts to add (max 3 total buttons)
-    local max_custom_to_add = math.max(0, 3 - #plugin_buttons)
-    local custom_to_add = math.min(#custom_prompts, max_custom_to_add)
-
-    -- Add custom prompts as buttons
-    for i = 1, custom_to_add do
-      local prompt = custom_prompts[i]
-      table.insert(plugin_buttons, {
-        id = "assistant_" .. prompt.id,
-        font_bold = true,
-        text = (prompt.config.text or prompt.id) .. " (AI)",
-        callback = function(widget_instance)
-            local popup = widget_instance or dict_popup_arg
-            local word = popup and popup.word
-            NetworkMgr:runWhenOnline(function()
-                Trapper:wrap(function()
-                  self.assistant_dialog:showCustomPrompt(word, prompt.id)
-                end)
-            end)
-        end,
-      })
+    if #current_row > 0 then
+      table.insert(layout, current_row)
+      table.insert(row_count, 3)
     end
+
+    G_reader_settings:saveSetting("dict_button_config", { layout = layout, order = order, row_count = row_count })
+    self.settings:flush()
   end
 
-  return plugin_buttons
-end
+  -- 1. Wikipedia (AI)
+  self.ui.dictionary:addToDictButtons({
+    id = "assistant_01_wikipedia",
+    menu_text = _("Wikipedia (AI)"),
+    insert_first = true,
+    show_func = function() return true end,
+    text_func = function()
+      return _("Wikipedia") .. " (AI)"
+    end,
+    callback = function(dict_popup)
+      NetworkMgr:runWhenOnline(function()
+        Trapper:wrap(function()
+          self.assistant_dialog:showCustomPrompt(dict_popup.word, "wikipedia")
+        end)
+      end)
+    end,
+  })
 
-function Assistant:onDictButtonsReady(dict_popup, dict_buttons)
-  if not CONFIGURATION then return end
-  -- If new KOReader API is present, we already registered at init() time.
-  -- This hook won't be called on new KOReader anyway, but guard for safety.
-  if self.ui and self.ui.dictionary
-      and type(self.ui.dictionary.addToDictButtons) == "function" then
-    return
-  end
+  -- 2. Term X-Ray (AI)
+  self.ui.dictionary:addToDictButtons({
+    id = "assistant_02_term_xray",
+    menu_text = _("Term X-Ray (AI)"),
+    insert_first = true,
+    show_func = function() return true end,
+    text_func = function()
+      return _("Term X-Ray") .. " (AI)"
+    end,
+    callback = function(dict_popup)
+      NetworkMgr:runWhenOnline(function()
+        Trapper:wrap(function()
+          showDictionaryDialog(self, dict_popup.word, nil, "term_xray")
+        end)
+      end)
+    end,
+  })
 
-  local plugin_buttons = {}
-  local buttons = self:_buildAssistantDictButtons(dict_popup)
-  for _, btn in ipairs(buttons) do
-    table.insert(plugin_buttons, {
-      id = btn.id,
-      font_bold = btn.font_bold,
-      text = btn.text,
-      callback = function() btn.callback(nil) end,
-    })
-  end
+  -- 3. Dictionary (AI)
+  self.ui.dictionary:addToDictButtons({
+    id = "assistant_03_dictionary",
+    menu_text = _("Dictionary (AI)"),
+    insert_first = true,
+    show_func = function() return true end,
+    text_func = function()
+      return _("Dictionary") .. " (AI)"
+    end,
+    callback = function(dict_popup)
+      NetworkMgr:runWhenOnline(function()
+        Trapper:wrap(function()
+          showDictionaryDialog(self, dict_popup.word)
+        end)
+      end)
+    end,
+  })
 
-  if #plugin_buttons > 0 and #dict_buttons > 1 then
-    table.insert(dict_buttons, 2, plugin_buttons)
+  -- 4. EN->PL (AI)
+  self.ui.dictionary:addToDictButtons({
+    id = "assistant_04_dict_en_pl",
+    menu_text = _("EN->PL (AI)"),
+    insert_first = true,
+    show_func = function() return true end,
+    text_func = function()
+      return _("EN->PL") .. " (AI)"
+    end,
+    callback = function(dict_popup)
+      NetworkMgr:runWhenOnline(function()
+        Trapper:wrap(function()
+          showDictionaryDialog(self, dict_popup.word, nil, "dict_en_pl")
+        end)
+      end)
+    end,
+  })
+
+  -- 5. SJP (AI)
+  self.ui.dictionary:addToDictButtons({
+    id = "assistant_05_dict_pl",
+    menu_text = _("SJP (AI)"),
+    insert_first = true,
+    show_func = function() return true end,
+    text_func = function()
+      return _("SJP") .. " (AI)"
+    end,
+    callback = function(dict_popup)
+      NetworkMgr:runWhenOnline(function()
+        Trapper:wrap(function()
+          showDictionaryDialog(self, dict_popup.word, nil, "dict_pl")
+        end)
+      end)
+    end,
+  })
+
+  -- Custom prompts from configuration
+  if CONFIGURATION.features and CONFIGURATION.features.prompts then
+    for prompt_key, prompt_config in ffiutil.orderedPairs(CONFIGURATION.features.prompts) do
+      if prompt_config.show_on_dictionary_popup == true and prompt_config.visible ~= false then
+        local key = prompt_key
+        local text = (prompt_config.text or key) .. " (AI)"
+        self.ui.dictionary:addToDictButtons({
+          id = "assistant_prompt_" .. key,
+          conditional = true,
+          show_func = function()
+            return self.settings:readSetting("dict_popup_show_custom_prompts", false)
+          end,
+          text_func = function()
+            return text
+          end,
+          callback = function(dict_popup)
+            NetworkMgr:runWhenOnline(function()
+              Trapper:wrap(function()
+                self.assistant_dialog:showCustomPrompt(dict_popup.word, key)
+              end)
+            end)
+          end,
+        })
+      end
+    end
   end
 end
 

@@ -9,7 +9,10 @@ local T = require("ffi/util").template
 local Event = require("ui/event")
 local koutil = require("util")
 local assistant_utils = require("assistant_utils")
-local dict_prompts = require("assistant_prompts").assistant_prompts.dict
+local assistant_prompts = require("assistant_prompts").assistant_prompts
+local dict_prompts      = assistant_prompts.dict
+local dict_en_pl_prompts = assistant_prompts.dict_en_pl
+local dict_pl_prompts    = assistant_prompts.dict_pl
 
 -- Expand context sentences to include surrounding sentences for pronouns and related narrative
 -- This captures "he", "she", "they" and nearby actions that provide important context
@@ -191,6 +194,10 @@ local function showDictionaryDialog(assistant, highlightedText, message_history,
         if prompt_type == "term_xray" then
             local term_xray_prompts = require("assistant_prompts").custom_prompts.term_xray
             system_prompt = term_xray_prompts.system_prompt
+        elseif prompt_type == "dict_en_pl" then
+            system_prompt = dict_en_pl_prompts.system_prompt
+        elseif prompt_type == "dict_pl" then
+            system_prompt = dict_pl_prompts.system_prompt
         else
             system_prompt = dict_prompts.system_prompt
         end
@@ -402,6 +409,27 @@ local function showDictionaryDialog(assistant, highlightedText, message_history,
             })
         }
         table.insert(message_history, context_message)
+    elseif prompt_type == "dict_en_pl" or prompt_type == "dict_pl" then
+        local chosen = (prompt_type == "dict_en_pl") and dict_en_pl_prompts or dict_pl_prompts
+        user_prompt = chosen.user_prompt
+        context_content = prev_context .. highlightedText .. next_context
+        title = (prompt_type == "dict_en_pl") and _("EN→PL") or _("SJP")
+        loading_message = (prompt_type == "dict_en_pl") and _("Loading EN→PL ...") or _("Ładowanie SJP ...")
+
+        local prop = ui.document:getProps()
+        local book_title = prop.title or "Unknown Title"
+        local book_author = prop.authors or "Unknown Author"
+        local context_message = {
+            role = "user",
+            content = string.gsub(user_prompt, "{(%w+)}", {
+                    language = dict_language,
+                    context = context_content,
+                    word = highlightedText,
+                    title = book_title,
+                    author = book_author,
+            })
+        }
+        table.insert(message_history, context_message)
     else
         user_prompt = dict_prompts.user_prompt
         context_content = prev_context .. highlightedText .. next_context
@@ -426,21 +454,14 @@ local function showDictionaryDialog(assistant, highlightedText, message_history,
     end
 
     local function createResultText(highlightedText, answer)
-        local result_text
         local render_markdown = koutil.tableGetValue(CONFIGURATION, "features", "render_markdown") or true
-        -- Limit prev_context to last 100 characters and next_context to first 100 characters
-        local prev_context_limited = string.sub(prev_context, -100)
-        local next_context_limited = string.sub(next_context, 1, 100)
         local normalized_answer = assistant_utils.normalizeMarkdownHeadings(answer, 2, 6) or answer
+        
         if render_markdown then
-            -- in markdown mode, outputs markdown formatted highlighted text
-            result_text = T("... %1 **%2** %3 ...\n\n%4", prev_context_limited, highlightedText, next_context_limited, normalized_answer)
+            return normalized_answer
         else
-            -- in plain text mode, use widget controlled characters.
-            result_text = T("%1... %2%3%4 ...\n\n%5", TextBoxWidget.PTF_HEADER, prev_context_limited, 
-                TextBoxWidget.PTF_BOLD_START, highlightedText, TextBoxWidget.PTF_BOLD_END,  next_context_limited, normalized_answer)
+            return T("%1%2", TextBoxWidget.PTF_HEADER, normalized_answer)
         end
-        return result_text
     end
 
     local result = createResultText(highlightedText, ret)

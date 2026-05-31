@@ -109,7 +109,7 @@ msgstr  "Analizowanie kontekstu książki dla Term X-Ray..."
 
 #: ../assistant_dictdialog.lua:390 ../assistant_prompts.lua:21 ../main.lua:833
 msgid   "Term X-Ray"
-msgstr  "Rentgen terminu"
+msgstr  "X-Ray"
 
 #: ../assistant_dictdialog.lua:391
 msgid   "Loading Term X-Ray ..."
@@ -563,7 +563,7 @@ msgstr  "Duże okno strumieniowania"
 #. @translators: functional overriding
 #: ../assistant_settings.lua:455
 msgid   "KOReader Tweaks & Overrides"
-msgstr  "Modyfikacje i nadpisania KOReadera"
+msgstr  "Zaawansowane ustawienia"
 
 #. @translators: 'Translate' is a built-in function
 #: ../assistant_settings.lua:459
@@ -719,21 +719,37 @@ msgstr  "Słowo skopiowano do schowka."
 msgid   "Selection copied to clipboard."
 msgstr  "Zaznaczenie skopiowano do schowka."
 
-#: ../main.lua:77 ../main.lua:145
+#: ../main.lua:310
+msgid   "Ask a Question"
+msgstr  "Zadaj pytanie"
+
+#: ../main.lua:316
+msgid   "Ask a general question to the AI (not book-related)."
+msgstr  "Zadaj ogólne pytanie do AI (niezwiązane z książkami)."
+
+#: ../main.lua:316
+msgid   "Ask a general question"
+msgstr  "Zadaj ogólne pytanie"
+
+#: ../main.lua:316
+msgid   "Ask anything..."
+msgstr  "Zapytaj o cokolwiek..."
+
+#: ../main.lua:77 ../main.lua:142
 msgid   "Ask the AI a question"
 msgstr  "Zadaj pytanie AI"
 
 #: ../main.lua:85 ../main.lua:181
 msgid   "AI Recaps"
-msgstr  "Podsumowania AI"
+msgstr  "Streszczenie dotychczasowej treści "
 
 #: ../main.lua:93 ../main.lua:170
 msgid   "AI X-Ray"
-msgstr  "AI Rentgen"
+msgstr  "AI X-Ray"
 
 #: ../main.lua:109 ../main.lua:159
 msgid   "Book Summary & Recs"
-msgstr  "Podsumowanie i polecenia"
+msgstr  "Podsumuj książkę i poleć podobne"
 
 #: ../main.lua:151
 msgid   "Enter a question to ask AI."
@@ -741,7 +757,7 @@ msgstr  "Wpisz pytanie do AI"
 
 #: ../main.lua:156
 msgid   "Book-Level Built-in Prompts"
-msgstr  "Wbudowane monity na poziomie książki"
+msgstr  "Zapytaj o książkę"
 
 #: ../main.lua:165
 msgid   "Summary of the book, author biography, historical context, and a list of similar book recommendations with descriptions."

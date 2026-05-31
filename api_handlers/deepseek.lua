@@ -29,6 +29,13 @@ function DeepSeekHandler:query(message_history, deepseek_settings)
         end
     end
 
+    -- Default thinking to enabled if not specified
+    if requestBodyTable.thinking == nil then
+        requestBodyTable.thinking = { type = "enabled" }
+    elseif type(requestBodyTable.thinking) == "boolean" then
+        requestBodyTable.thinking = { type = requestBodyTable.thinking and "enabled" or "disabled" }
+    end
+
     -- Default stream to false if not specified
     if requestBodyTable.stream == nil then
         requestBodyTable.stream = false

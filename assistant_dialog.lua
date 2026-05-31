@@ -111,14 +111,12 @@ function AssistantDialog:_createResultText(highlightedText, message_history, pre
         end
         user_message = string.format("\n\n%s\n\n", content)
       end
-      return "### ⮞ User: " .. user_message
     elseif message.role == "assistant" then
-      local assistant_content = message.content or _("(No response)")
-      -- Remove code block markers before displaying
-      assistant_content = assistant_content:gsub("```", "\n")
-      assistant_content = normalizeMarkdownHeadings(assistant_content, 3, 6) or assistant_content
-      return string.format("### ⮞ Assistant:\n\n%s\n\n", assistant_content)
-    end
+  local assistant_content = message.content or _("(No response)")
+  assistant_content = assistant_content:gsub("```", "\n")
+  assistant_content = normalizeMarkdownHeadings(assistant_content, 3, 6) or assistant_content
+  return string.format("%s\n", assistant_content)  -- bez nagłówka
+end
     return "" -- Should not happen for valid roles
   end
 
