@@ -206,7 +206,7 @@ Bez spoilerów. Krótko i czytelnie.
     },
 
     book_info = {
-        system_prompt = “Jesteś ekspertem literackim. Odpowiadaj krótko, zwięźle i po polsku.”,
+        system_prompt = "Jesteś ekspertem literackim. Odpowiadaj krótko, zwięźle i po polsku.",
         user_prompt = [[
 Wygeneruj informacje o książce “{title}” autorstwa {author}:
 
